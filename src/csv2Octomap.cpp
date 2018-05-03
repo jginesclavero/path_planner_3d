@@ -70,10 +70,12 @@ namespace csv_2_octomap {
 						endFile = false;
 						sizeMapY++;
 					}
+					sizeMapY=/map_res;
+					sizeMapX=/map_res;
 
 					file.close();
 
-					cost_map.resizeMap(sizeof(intMap[0])*10,sizeof(intMap)*10, map_res, origin_x, origin_y);
+					cost_map.resizeMap(sizeMapX,sizeMapY, map_res, origin_x, origin_y);
 
 					for(int i=0; i< sizeMapX*map_res; i++){
 							for(int j=0; i< sizeMapY*map_res; j++){
