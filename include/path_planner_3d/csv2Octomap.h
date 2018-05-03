@@ -26,6 +26,7 @@ namespace csv_2_octomap {
 
   private:
 
+		void csv2CostMap(std::string);
 		void transform2DtoOct(costmap_2d::Costmap2D cost_map);
 		void publishFullOctoMap();
     ros::NodeHandle nh_;
@@ -41,6 +42,9 @@ namespace csv_2_octomap {
 		double voxel_res,map_res;
 		unsigned m_treeDepth;
 		unsigned m_maxTreeDepth;
+
+		 std::vector<std::vector<int>> intMap; //For CSV to CostMap conversion
+		 int sizeMapX, sizeMapY;
 
 	};
 }

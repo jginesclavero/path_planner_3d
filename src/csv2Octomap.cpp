@@ -1,4 +1,5 @@
 #include "path_planner_3d/csv2Octomap.h"
+#include <fstream>
 
 namespace csv_2_octomap {
 
@@ -13,6 +14,8 @@ namespace csv_2_octomap {
 		origin_x = 0.0; //Habrá que verlo
 		origin_y = 0.0; //Habrá que verlo
 		default_value = 0;
+		sizeMapX=0;
+		sizeMapY=0;
 
 		double probHit, probMiss, thresMin, thresMax;
 		probHit = 0.7;probMiss=0.4;thresMin=0.12;thresMax=0.97;
@@ -31,6 +34,57 @@ namespace csv_2_octomap {
 		transform2DtoOct(cost_map);
 		publishFullOctoMap();
 	}
+
+	void Csv2Octomap::csv2CostMap(std::string fileName){
+		 		std::ifstream file;
+
+				file.open(fileName);
+				if( ! file.is_open() )
+				{
+							printf("Not able to open file: %s\n",fileName.c_str());
+				}
+				else{
+					printf("Opened file: %s\n",fileName.c_str());
+
+					std::vector<int> intsOnFileLine;
+					bool endFile=false;
+					while(!endFile){
+
+						intsOnFileLine.clear();
+
+						if( file.eof() ){
+								endFile = true;
+								continue;
+						}
+
+						std::string s;
+						getline(file, s);
+						std::stringstream ss(s);
+
+						int d;
+						while (ss >> d){
+								intsOnFileLine.push_back(d);
+								sizeMapX++;
+						}
+						intMap.push_back( intsOnFileLine );
+						endFile = false;
+						sizeMapY++;
+					}
+
+					file.close();
+
+					cost_map.resizeMap(sizeof(intMap[0])*10,sizeof(intMap)*10, map_res, origin_x, origin_y);
+
+					for(int i=0; i< sizeMapX*map_res; i++){
+							for(int j=0; i< sizeMapY*map_res; j++){
+									for(int cell=0; cell<9;cell++){
+										cost_map.setCost((i+cell),(j+cell),intMap[i][j]*244);
+									}
+							}
+					}
+			}
+		}
+
 
 	void
 	Csv2Octomap::transform2DtoOct(costmap_2d::Costmap2D cost_map){
@@ -69,8 +123,9 @@ namespace csv_2_octomap {
 			ROS_ERROR("Error serializing OctoMap");
 	}
 
-}
 
+
+}
 
 using namespace csv_2_octomap;
 
