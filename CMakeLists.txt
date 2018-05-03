@@ -16,7 +16,8 @@ find_package(catkin REQUIRED COMPONENTS
   octomap_msgs
   geometry_msgs
   nav_msgs
-  visualization_msgs)
+  visualization_msgs
+  costmap_2d)
 
 
 include_directories(
@@ -60,6 +61,9 @@ add_executable(path_planner_3d_node src/path_planner.cpp src/rrtstar.cpp)
 add_dependencies(path_planner_3d_node ${catkin_EXPORTED_TARGETS})
 target_link_libraries(path_planner_3d_node ${catkin_LIBRARIES})
 
+add_executable(csv2Octomap_node src/csv2Octomap.cpp)
+add_dependencies(csv2Octomap_node ${catkin_EXPORTED_TARGETS})
+target_link_libraries(csv2Octomap_node ${catkin_LIBRARIES})
 
 
 

@@ -33,7 +33,7 @@ namespace path_planner {
   private:
     ros::NodeHandle nh_;
     ros::Subscriber octoscan_sub;
-		ros::Publisher vis_pub_;
+		ros::Publisher vis_pub_,shortTerm_map_pub;
     octomap::OcTree* octree;
     RRTSTAR *rrtstar;
 		visualization_msgs::MarkerArray nodes_vis_;
@@ -41,6 +41,7 @@ namespace path_planner {
 		Pose startPose_,goalPose_;
 
     ros::ServiceServer plannerSrv;
+		Pose offsetOriginPoint(Pose p);
 		void addStartGoalVis(geometry_msgs::Pose start,geometry_msgs::Pose goal);
 		void addLocationVis(int id, geometry_msgs::Pose pose);
 		void publish_plan();

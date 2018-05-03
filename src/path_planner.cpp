@@ -6,25 +6,59 @@ namespace path_planner {
     octoscan_sub = nh_.subscribe("/octomap_full", 1, &PathPlanner::mapCallback, this);
     plannerSrv = nh_.advertiseService("/make_plan", &PathPlanner::makePlanSrv,this);
 		vis_pub_ = nh_.advertise<visualization_msgs::MarkerArray>( "markers", 10 );
+		//shortTerm_map_pub = nh_.advertise<octomap_msgs::Octomap>("octomap_mod", 1,false);
 
 	}
 
   bool PathPlanner::makePlanSrv(nav_msgs::GetPlan::Request &req, nav_msgs::GetPlan::Response &res){
-    //vector<PoseStamped> path;
-
-    //req.start.header.frame_id = "/map";
-    //req.goal.header.frame_id = "/map";
-    //bool success = makePlan(req.start, req.goal, path,true);
-
-    if (octree == NULL)
+		if (octree == NULL)
       return false;
-		startPose_ = req.start.pose;
-		goalPose_ = req.goal.pose;
+
+		startPose_ = offsetOriginPoint(req.start.pose);
+		goalPose_ = offsetOriginPoint(req.goal.pose);
+
 		ROS_INFO("Planning");
 
-    makePlan(req.start.pose, req.goal.pose);
+    makePlan(startPose_, goalPose_);
 		publish_plan();
     return true;
+
+		/*
+		octomap::point3d point(-1.5, -1.5, 0.0);
+		octomap::point3d point_end(-1.5, -1.5, 1.2);
+
+		octomap::KeyRay keyRay;
+		octomap::KeySet cells;
+
+		if (octree->computeRayKeys(point, point_end, keyRay)){
+			cells.insert(keyRay.begin(), keyRay.end());
+
+			int j = 0;
+			for (octomap::KeySet::iterator it = cells.begin(), end=cells.end(); it!= end; it++) {
+					octomap::OcTreeNode* node = octree->search(*it);
+					if(node){
+						octree->setNodeValue(*it,0,false);
+					}else{
+						octree->updateNode(*it, false);
+						octree->setNodeValue(*it, 0, false);
+					}
+			}
+		}
+
+		octomap_msgs::Octomap map;
+		if (octomap_msgs::fullMapToMsg(*octree, map)){
+			//ROS_INFO("send shortTerm_map");
+			map.header.frame_id = "map";
+			map.header.stamp = ros::Time::now();
+			shortTerm_map_pub.publish(map);
+			ROS_DEBUG("ShortTermMap published");
+		}else{
+			ROS_ERROR("Error serializing OctoMap");
+		}
+
+		return true;*/
+
+
   }
 
   void PathPlanner::mapCallback(const octomap_msgs::Octomap::ConstPtr& octomap){
@@ -34,9 +68,18 @@ namespace path_planner {
 		ROS_INFO("length %f, width %f, height %f",world_length_,world_width_,world_height_);
   }
 
+	Pose
+	PathPlanner::offsetOriginPoint(Pose p){
+		Pose r;
+		r.position.x = p.position.x - 1.5;
+		r.position.y = p.position.y - 1.5;
+
+		return r;
+	}
+
   void PathPlanner::makePlan(Pose start, Pose goal){
     rrtstar->max_iter = 10000;
-		rrtstar->step_size = 2;
+		rrtstar->step_size = 1;
     rrtstar->startPos = start.position;
     rrtstar->endPos = goal.position;
 		rrtstar->world_length = world_length_;
@@ -62,8 +105,10 @@ namespace path_planner {
                 Pose newConfigPosOrient = rrtstar->newConfig(q, qNearest);
                 Point newConfigPos;
                 newConfigPos = newConfigPosOrient.position;
-								//ROS_INFO("newConfigPos [%f,%f]",newConfigPos.x,newConfigPos.y);
+								ROS_INFO("newConfigPos [%f,%f]",newConfigPos.x,newConfigPos.y);
+								ROS_INFO("qNearest [%f,%f]",qNearest->position.x,qNearest->position.y);
                 if (!isSegmentInObstacle(newConfigPos, qNearest->position)) {
+										ROS_INFO("no isSegmentInObstacle");
                     Node *qNew = new Node;
                     qNew->position = newConfigPos;
                 		//  qNew->orientation = newConfigPosOrient.z(); MOVIDA!!!!!!!!!!
@@ -78,8 +123,9 @@ namespace path_planner {
                     for(int j = 0; j < Qnear.size(); j++){
                         Node *qNear = Qnear[j];
                         if(!isSegmentInObstacle(qNear->position, qNew->position) &&
-                                (rrtstar->Cost(qNear)+rrtstar->PathCost(qNear, qNew)) < cmin ){
-                            qMin = qNear; cmin = rrtstar->Cost(qNear)+rrtstar->PathCost(qNear, qNew);
+                          (rrtstar->Cost(qNear)+rrtstar->PathCost(qNear, qNew)) < cmin ){
+                          qMin = qNear;
+													cmin = rrtstar->Cost(qNear)+rrtstar->PathCost(qNear, qNew);
                         }
                     }
 										//ROS_INFO("qMin [%f,%f]",qMin->position.x,qMin->position.y);

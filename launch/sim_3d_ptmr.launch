@@ -17,7 +17,6 @@
 
   <arg name="robot_name" value="robot1"/>
   <!-- map3 -->
-
 <!--  <arg name="posx" value="4.5"/>
   <arg name="posy" value="10.5"/>
   <arg name="posYaw" value="0.0"/>-->
