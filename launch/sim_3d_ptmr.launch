@@ -1,0 +1,78 @@
+
+<launch>
+
+  <arg name="world_name" default="$(find path_planner_3d)/worlds/map1.world"/>
+  <!--<arg name="world_name" default="$(find path_planner_3d)/worlds/map2.world"/>
+  <arg name="world_name" default="$(find path_planner_3d)/worlds/map3.world"/>-->
+
+
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="use_sim_time" value="true"/>
+    <arg name="debug" value="false"/>
+    <arg name="world_name" value="$(arg world_name)"/>
+    <arg name="gui" value="false"/>
+
+  </include>
+
+
+  <arg name="robot_name" value="robot1"/>
+  <!-- map3 -->
+
+<!--  <arg name="posx" value="4.5"/>
+  <arg name="posy" value="10.5"/>
+  <arg name="posYaw" value="0.0"/>-->
+
+  <arg name="posx" value="2.5"/>
+  <arg name="posy" value="2.5"/>
+  <arg name="posYaw" value="0.0"/>
+
+
+  <include file="$(find path_planner_3d)/launch/includes/robot_velodyne.launch.xml">
+  <!--  <arg name="robot_name" value="$(arg robot_name)"/>-->
+    <arg name="posx" value="$(arg posx)"/>
+    <arg name="posy" value="$(arg posy)"/>
+    <arg name="posYaw" value="$(arg posYaw)"/>
+  </include>
+
+
+  <node pkg="laser_filters" type="scan_to_scan_filter_chain" name="laser_filter">
+    <rosparam command="load" file="$(find git_robots)/definition/sim/my_laser_config.yaml" />
+  </node>
+
+  <node pkg="tf" type="static_transform_publisher" name="$(arg robot_name)map_broadcaster" args="0.0 0 0 0 0 0.0 map odom 100" />
+
+  <node pkg="octomap_server" type="octomap_server_node" name="octomap_server">
+		<param name="map_file" value="$(find path_planner_3d)/maps/octomap/map1.ot" />
+	</node>
+</launch>
+
+<!--
+<launch>
+
+ <arg name="world_name" default="$(find git_robots)/worlds/GrannyAnnie.world"/>
+
+ <node pkg="laser_filters" type="scan_to_scan_filter_chain" name="laser_filter">
+    <rosparam command="load" file="$(find git_robots)/definition/sim/my_laser_config.yaml" />
+  </node>
+
+ <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="use_sim_time" value="true"/>
+    <arg name="debug" value="false"/>
+   	<arg name="world_name" value="$(arg world_name)"/>
+   </include>
+
+
+  <arg name="robot_name" value="robot"/>
+  <param name="robot_description"
+        command="$(find xacro)/xacro.py '$(find git_robots)/definition/sim/kobuki_hexagons_asus_xtion_pro.urdf.xacro'"/>
+  <node pkg="gazebo_ros" type="spawn_model" name="spawn_$(arg robot_name)"
+        args="-x 0.0 -y 0.0 -z 0.0 -Y 3.14159 -unpause -urdf -param robot_description -model $(arg robot_name)" respawn="false">
+
+  </node>
+
+  <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
+    <param name="publish_frequency" type="double" value="30.0" />
+  </node>
+
+ </launch>
+-->
