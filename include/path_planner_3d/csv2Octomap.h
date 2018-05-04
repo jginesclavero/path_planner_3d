@@ -52,6 +52,7 @@ namespace csv_2_octomap {
 
 		 std::vector<std::vector<int>> intMap; //For CSV to CostMap conversion
 		 int sizeMapX, sizeMapY;
+		 float cells=10;
 
 	};
 }

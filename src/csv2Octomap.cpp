@@ -38,56 +38,56 @@ namespace csv_2_octomap {
 	}
 
 	void Csv2Octomap::csv2CostMap(std::string fileName){
-		 		std::ifstream file;
-				file.open(fileName);
+		std::ifstream file;
+		file.open(fileName.c_str());
 
-				if(!file.is_open() ){
-						ROS_ERROR("Not able to open file: %s",fileName.c_str());
-				}else{
-					ROS_INFO("Opened file: %s",fileName.c_str());
+		if(!file.is_open() ){
+			ROS_ERROR("Not able to open file: %s",fileName.c_str());
+		}else{
+			ROS_INFO("Opened file: %s",fileName.c_str());
 
-					std::vector<int> intsOnFileLine;
-					bool endFile=false;
-					while(!endFile){
+			std::vector<int> intsOnFileLine;
+			bool endFile=false;
+			while(!endFile){
 
-						intsOnFileLine.clear();
+				intsOnFileLine.clear();
+				std::string s;
+				std::getline(file, s);
+				std::stringstream ss(s);
 
-						if( file.eof() ){
-								endFile = true;
-								continue;
-						}
+				if( file.eof() ){
+					endFile = true;
+					continue;
+				}
 
-						std::string s;
-						getline(file, s);
-						std::stringstream ss(s);
+				std::string val;
+				while (getline(ss, val,',')){
+					intsOnFileLine.push_back((float)stoi(val));
+				}
+				intMap.push_back(intsOnFileLine);
 
-						int d;
-						while (ss >> d){
-								intsOnFileLine.push_back(d);
-								sizeMapX++;
-						}
-						intMap.push_back( intsOnFileLine );
-						endFile = false;
-						sizeMapY++;
-					}
-					sizeMapY=sizeMapY/map_res;
-					sizeMapX=sizeMapX/map_res;
-
-					file.close();
-
-					cost_map.resizeMap(sizeMapX,sizeMapY, map_res, origin_x, origin_y);
-					cost_map.setDefaultValue(default_value);
-					cost_map.resetMap(0,0,cost_map.getSizeInCellsX(), cost_map.getSizeInCellsY());
-					for(int i=0; i< sizeMapX; i++){
-							for(int j=0; j< sizeMapY; j++){
-									//for(int cell=0; cell<9;cell++){
-										cost_map.setCost((i),(j),intMap[i*map_res][j*map_res]*254);
-										ROS_INFO("%d",intMap[i*map_res][j*map_res]);
-									//}
-							}
-					}
 			}
-		}
+			file.close();
+
+			sizeMapX=intMap.size()/map_res;
+			sizeMapY=intMap[0].size()/map_res;
+
+			cost_map.resizeMap(sizeMapX,sizeMapY, map_res, origin_x, origin_y);
+			cost_map.setDefaultValue(default_value);
+			cost_map.resetMap(0,0,cost_map.getSizeInCellsX(), cost_map.getSizeInCellsY());
+
+			for(int i=0; i< sizeMapX*map_res; i++){
+				for(int j=0; j< sizeMapY*map_res; j++){
+					for(int cellY=0; cellY<cells;cellY++){
+						for(int cellX=0; cellX<cells;cellX++){
+							cost_map.setCost((i*cells + cellX),(j*cells + cellY),intMap[i][j]*254);
+							//ROS_INFO("%d",intMap[i*map_res][j*map_res]);
+						}
+					}
+				}
+			}
+	}
+}
 
 
 	void
