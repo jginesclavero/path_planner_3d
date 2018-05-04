@@ -7,7 +7,7 @@ namespace csv_2_octomap {
 	cost_map(),
 	octree(NULL){
 		map_res = 0.1;
-		voxel_res = 0.1;
+		voxel_res = 0.105;
 		cells_size_x = 100; //Habrá que verlo
 		cells_size_y = 100; //Habrá que verlo
 		origin_x = 0.0; //Habrá que verlo
@@ -19,7 +19,7 @@ namespace csv_2_octomap {
 		double probHit, probMiss, thresMin, thresMax;
 		probHit = 0.7;probMiss=0.4;thresMin=0.12;thresMax=0.97;
 
-		octomap_pub = nh_.advertise<octomap_msgs::Octomap>("octomap_full", 1,false);
+		octomap_pub = nh_.advertise<octomap_msgs::Octomap>("octomap_full", 1,true);
 		//cost_map.resizeMap(cells_size_x,cells_size_y, map_res, origin_x, origin_y);
 		//cost_map.setDefaultValue(default_value);
 		//cost_map.resetMap(0,0,cost_map.getSizeInCellsX(), cost_map.getSizeInCellsY());
@@ -103,6 +103,7 @@ namespace csv_2_octomap {
 					octomap::point3d point(x*map_res, y*map_res, 0);
 					octomap::point3d point_end(x*map_res,y*map_res,2.5);
 					if (octree->computeRayKeys(point, point_end, keyRay)){
+						//ROS_INFO("in computeRayKeys");
 			      occupied_cells.insert(keyRay.begin(), keyRay.end());
 			    }
 				}
@@ -113,6 +114,7 @@ namespace csv_2_octomap {
 				octree->updateNode(*it,true);
 				octree->setNodeValue(*it,1,true);
 	  }
+		octree->updateInnerOccupancy();
 	}
 
 	void
