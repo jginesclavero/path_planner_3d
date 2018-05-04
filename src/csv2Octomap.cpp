@@ -19,7 +19,7 @@ namespace csv_2_octomap {
 		double probHit, probMiss, thresMin, thresMax;
 		probHit = 0.7;probMiss=0.4;thresMin=0.12;thresMax=0.97;
 
-		octomap_pub = nh_.advertise<octomap_msgs::Octomap>("octomap_full", 1,true);
+		octomap_pub = nh_.advertise<octomap_msgs::Octomap>("/octomap_full", 1,true);
 		//cost_map.resizeMap(cells_size_x,cells_size_y, map_res, origin_x, origin_y);
 		//cost_map.setDefaultValue(default_value);
 		//cost_map.resetMap(0,0,cost_map.getSizeInCellsX(), cost_map.getSizeInCellsY());
@@ -100,12 +100,14 @@ namespace csv_2_octomap {
 			for(unsigned int x = 0; x < cost_map.getSizeInCellsX(); x++) {
 				cost_now = cost_map.getCost(x,y);
 				if(cost_now > 0){
-					octomap::point3d point(x*map_res, y*map_res, 0);
+					octomap::point3d point(x*map_res, y*map_res, 0.0);
 					octomap::point3d point_end(x*map_res,y*map_res,2.5);
-					if (octree->computeRayKeys(point, point_end, keyRay)){
-						//ROS_INFO("in computeRayKeys");
+					if (octree->computeRayKeys(point, point_end, keyRay))
 			      occupied_cells.insert(keyRay.begin(), keyRay.end());
-			    }
+				}else{
+					octomap::point3d point(x*map_res, y*map_res, 0.0);
+					key = octree->coordToKey(point);
+			    occupied_cells.insert(key);
 				}
 			}
 		}
@@ -138,7 +140,6 @@ using namespace csv_2_octomap;
 int main(int argc, char **argv)
 {
    ros::init(argc, argv, "csv2Octomap_node");
-	 ROS_INFO("main");
    ros::NodeHandle n;
    Csv2Octomap csv_2_octomap;
 

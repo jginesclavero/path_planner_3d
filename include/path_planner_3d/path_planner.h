@@ -41,9 +41,8 @@ namespace path_planner {
 		Pose startPose_,goalPose_;
 
     ros::ServiceServer plannerSrv;
-		Pose offsetOriginPoint(Pose p);
 		void addStartGoalVis(geometry_msgs::Pose start,geometry_msgs::Pose goal);
-		void addLocationVis(int id, geometry_msgs::Pose pose);
+		void addLocationVis(int id, geometry_msgs::Pose pose,float r, float g, float b);
 		void publish_plan();
 
 

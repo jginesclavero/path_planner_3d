@@ -38,11 +38,11 @@
     <rosparam command="load" file="$(find git_robots)/definition/sim/my_laser_config.yaml" />
   </node>
 
-  <node pkg="tf" type="static_transform_publisher" name="$(arg robot_name)map_broadcaster" args="0.0 0 0 0 0 0.0 map odom 100" />
+  <node pkg="tf" type="static_transform_publisher" name="$(arg robot_name)map_broadcaster" args="2.5 2.5 0 0 0 0.0 map odom 100" />
 
-  <node pkg="octomap_server" type="octomap_server_node" name="octomap_server">
-		<param name="map_file" value="$(find path_planner_3d)/maps/octomap/map1.ot" />
-	</node>
+  <node pkg="path_planner_3d" type="csv2Octomap_node" name="csv2Octomap_node" output="screen">
+    <param name="map_file" value="$(find path_planner_3d)/maps/csv/map1.csv" />
+  </node>
 </launch>
 
 <!--

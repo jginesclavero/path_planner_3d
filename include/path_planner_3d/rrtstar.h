@@ -9,7 +9,7 @@
 #include "geometry_msgs/Pose.h"
 #define START_ORIENT 0.0
 #define RRTSTAR_NEIGHBOR_FACTOR 2
-#define END_DIST_THRESHOLD 0.1
+#define END_DIST_THRESHOLD 0.15
 
 using namespace std;
 using namespace geometry_msgs;

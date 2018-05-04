@@ -14,8 +14,8 @@ namespace path_planner {
 		if (octree == NULL)
       return false;
 
-		startPose_ = offsetOriginPoint(req.start.pose);
-		goalPose_ = offsetOriginPoint(req.goal.pose);
+		startPose_ = req.start.pose;
+		goalPose_ = req.goal.pose;
 
 		ROS_INFO("Planning");
 
@@ -68,17 +68,8 @@ namespace path_planner {
 		ROS_INFO("length %f, width %f, height %f",world_length_,world_width_,world_height_);
   }
 
-	Pose
-	PathPlanner::offsetOriginPoint(Pose p){
-		Pose r;
-		r.position.x = p.position.x - 1.5;
-		r.position.y = p.position.y - 1.5;
-
-		return r;
-	}
-
   void PathPlanner::makePlan(Pose start, Pose goal){
-    rrtstar->max_iter = 10000;
+    rrtstar->max_iter = 1000;
 		rrtstar->step_size = 1;
     rrtstar->startPos = start.position;
     rrtstar->endPos = goal.position;
@@ -105,10 +96,10 @@ namespace path_planner {
                 Pose newConfigPosOrient = rrtstar->newConfig(q, qNearest);
                 Point newConfigPos;
                 newConfigPos = newConfigPosOrient.position;
-								ROS_INFO("newConfigPos [%f,%f]",newConfigPos.x,newConfigPos.y);
-								ROS_INFO("qNearest [%f,%f]",qNearest->position.x,qNearest->position.y);
+								//ROS_INFO("newConfigPos [%f,%f]",newConfigPos.x,newConfigPos.y);
+								//ROS_INFO("qNearest [%f,%f]",qNearest->position.x,qNearest->position.y);
                 if (!isSegmentInObstacle(newConfigPos, qNearest->position)) {
-										ROS_INFO("no isSegmentInObstacle");
+										//ROS_INFO("no isSegmentInObstacle");
                     Node *qNew = new Node;
                     qNew->position = newConfigPos;
                 		//  qNew->orientation = newConfigPosOrient.z(); MOVIDA!!!!!!!!!!
@@ -128,8 +119,7 @@ namespace path_planner {
 													cmin = rrtstar->Cost(qNear)+rrtstar->PathCost(qNear, qNew);
                         }
                     }
-										//ROS_INFO("qMin [%f,%f]",qMin->position.x,qMin->position.y);
-										//ROS_INFO("qNew [%f,%f]",qNew->position.x,qNew->position.y);
+
                     rrtstar->add(qMin, qNew);
 
                     for(int j = 0; j < Qnear.size(); j++){
@@ -202,15 +192,15 @@ namespace path_planner {
 			int j = 0;
 			for(int i = 0; i < (int)rrtstar->path.size(); i++) {
 					p.position = rrtstar->path[i]->position;
-					addLocationVis(i, p);
+					addLocationVis(i, p,0.0,1.0,0.0);
 					j = i;
 			}
-			addLocationVis(j+1, startPose_);
-			addLocationVis(j+2, goalPose_);
+			addLocationVis(j+1, startPose_,1.0,0.0,0.0);
+			addLocationVis(j+2, goalPose_,1.0,0.0,0.0);
 			vis_pub_.publish(nodes_vis_);
 	}
 
-	void PathPlanner::addLocationVis(int id, geometry_msgs::Pose pose)
+	void PathPlanner::addLocationVis(int id, geometry_msgs::Pose pose,float r, float g, float b)
   {
     	visualization_msgs::Marker marker;
 			Pose p;
@@ -220,17 +210,17 @@ namespace path_planner {
       marker.id = id;
       marker.type = visualization_msgs::Marker::SPHERE;
       marker.action = visualization_msgs::Marker::ADD;
-			p.position.x = pose.position.x - startPose_.position.x;
-			p.position.y = pose.position.y - startPose_.position.y;
+			//p.position.x = pose.position.x - startPose_.position.x;
+			//p.position.y = pose.position.y - startPose_.position.y;
 
-      marker.pose = p;
+      marker.pose = pose;
       marker.scale.x = 0.1;
       marker.scale.y = 0.1;
       marker.scale.z = 0.1;
       marker.color.a = 1.0; // Don't forget to set the alpha!
-      marker.color.r = 0.0;
-      marker.color.g = 1.0;
-      marker.color.b = 0.0;
+      marker.color.r = r;
+      marker.color.g = g;
+      marker.color.b = b;
       nodes_vis_.markers.push_back(marker);
   }
 
