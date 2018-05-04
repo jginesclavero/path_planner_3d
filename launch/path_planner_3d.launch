@@ -1,0 +1,5 @@
+<launch>
+  <node pkg="path_planner_3d" type="csv2Octomap_node" name="csv2Octomap_node" output="screen">
+    <param name="map_file" value="$(find path_planner_3d)/maps/csv/map1.csv" />
+  </node>
+</launch>

@@ -11,6 +11,10 @@
 
 #include <costmap_2d/costmap_2d_ros.h>
 #include <costmap_2d/costmap_2d.h>
+#include <costmap_2d/costmap_2d_publisher.h>
+
+
+#include <fstream>
 
 
 
@@ -34,6 +38,9 @@ namespace csv_2_octomap {
 		ros::Publisher octomap_pub;
     octomap::OcTree* octree;
 		costmap_2d::Costmap2D cost_map;
+		std::string mapFilenameParam;
+		costmap_2d::Costmap2DPublisher cost_map_publisher_;
+
 
 		unsigned int cells_size_x, cells_size_y;
 		double  origin_x ,origin_y;

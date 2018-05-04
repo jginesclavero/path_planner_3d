@@ -1,12 +1,11 @@
 #include "path_planner_3d/csv2Octomap.h"
-#include <fstream>
 
 namespace csv_2_octomap {
 
 	Csv2Octomap::Csv2Octomap():nh_("~"),
+	cost_map_publisher_(&nh_,&cost_map,"/map","/costmap_auto",true),
 	cost_map(),
 	octree(NULL){
-
 		map_res = 0.1;
 		voxel_res = 0.1;
 		cells_size_x = 100; //Habrá que verlo
@@ -21,30 +20,31 @@ namespace csv_2_octomap {
 		probHit = 0.7;probMiss=0.4;thresMin=0.12;thresMax=0.97;
 
 		octomap_pub = nh_.advertise<octomap_msgs::Octomap>("octomap_full", 1,false);
-		cost_map.resizeMap(cells_size_x,cells_size_y, map_res, origin_x, origin_y);
-		cost_map.setDefaultValue(default_value);
-		cost_map.resetMap(0,0,cost_map.getSizeInCellsX(), cost_map.getSizeInCellsY());
+		//cost_map.resizeMap(cells_size_x,cells_size_y, map_res, origin_x, origin_y);
+		//cost_map.setDefaultValue(default_value);
+		//cost_map.resetMap(0,0,cost_map.getSizeInCellsX(), cost_map.getSizeInCellsY());
 
 		octree = new octomap::OcTree(voxel_res);
 	  octree->setProbHit(probHit);
 	  octree->setProbMiss(probMiss);
 	  octree->setClampingThresMin(thresMin);
 	  octree->setClampingThresMax(thresMax);
-		//pasar de csv a costmap
+		if (nh_.getParam("map_file", mapFilenameParam)) {
+			csv2CostMap(mapFilenameParam);
+    }
+		cost_map_publisher_.publishCostmap();
 		transform2DtoOct(cost_map);
 		publishFullOctoMap();
 	}
 
 	void Csv2Octomap::csv2CostMap(std::string fileName){
 		 		std::ifstream file;
-
 				file.open(fileName);
-				if( ! file.is_open() )
-				{
-							printf("Not able to open file: %s\n",fileName.c_str());
-				}
-				else{
-					printf("Opened file: %s\n",fileName.c_str());
+
+				if(!file.is_open() ){
+						ROS_ERROR("Not able to open file: %s",fileName.c_str());
+				}else{
+					ROS_INFO("Opened file: %s",fileName.c_str());
 
 					std::vector<int> intsOnFileLine;
 					bool endFile=false;
@@ -70,18 +70,20 @@ namespace csv_2_octomap {
 						endFile = false;
 						sizeMapY++;
 					}
-					sizeMapY=/map_res;
-					sizeMapX=/map_res;
+					sizeMapY=sizeMapY/map_res;
+					sizeMapX=sizeMapX/map_res;
 
 					file.close();
 
 					cost_map.resizeMap(sizeMapX,sizeMapY, map_res, origin_x, origin_y);
-
-					for(int i=0; i< sizeMapX*map_res; i++){
-							for(int j=0; i< sizeMapY*map_res; j++){
-									for(int cell=0; cell<9;cell++){
-										cost_map.setCost((i+cell),(j+cell),intMap[i][j]*244);
-									}
+					cost_map.setDefaultValue(default_value);
+					cost_map.resetMap(0,0,cost_map.getSizeInCellsX(), cost_map.getSizeInCellsY());
+					for(int i=0; i< sizeMapX; i++){
+							for(int j=0; j< sizeMapY; j++){
+									//for(int cell=0; cell<9;cell++){
+										cost_map.setCost((i),(j),intMap[i*map_res][j*map_res]*254);
+										ROS_INFO("%d",intMap[i*map_res][j*map_res]);
+									//}
 							}
 					}
 			}
@@ -133,7 +135,8 @@ using namespace csv_2_octomap;
 
 int main(int argc, char **argv)
 {
-   ros::init(argc, argv, "path_planner_node");
+   ros::init(argc, argv, "csv2Octomap_node");
+	 ROS_INFO("main");
    ros::NodeHandle n;
    Csv2Octomap csv_2_octomap;
 
