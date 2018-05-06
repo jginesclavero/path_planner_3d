@@ -36,14 +36,15 @@ namespace path_planner {
 		ros::Publisher vis_pub_,shortTerm_map_pub;
     octomap::OcTree* octree;
     RRTSTAR *rrtstar;
-		visualization_msgs::MarkerArray nodes_vis_;
+		visualization_msgs::MarkerArray nodes_vis_,connection_vis_;
 		double world_length_,world_width_,world_height_;
 		Pose startPose_,goalPose_;
 
     ros::ServiceServer plannerSrv;
 		void addStartGoalVis(geometry_msgs::Pose start,geometry_msgs::Pose goal);
-		void addLocationVis(int id, geometry_msgs::Pose pose,float r, float g, float b);
-		void publish_plan();
+		void addLocationVis(int id, geometry_msgs::Pose pose,float r, float g, float b,float alpha);
+		void addConnectionVis(int id, geometry_msgs::Pose from, geometry_msgs::Pose to,float r, float g, float b,float alpha);
+		void publishPlan();
 
 
 	};

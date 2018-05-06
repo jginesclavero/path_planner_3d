@@ -20,7 +20,7 @@ namespace path_planner {
 		ROS_INFO("Planning");
 
     makePlan(startPose_, goalPose_);
-		publish_plan();
+		publishPlan();
     return true;
 
 		/*
@@ -84,7 +84,7 @@ namespace path_planner {
     //rrtstar->setStepSize(ui->stepSize->text().toInt());
 
     // RRTSTAR Algorithm
-
+		int id=0;
     for(int i = 0; i < rrtstar->max_iter; i++) {
         Node *q = rrtstar->getRandomNode();
         if (q) {
@@ -121,6 +121,19 @@ namespace path_planner {
                     }
 
                     rrtstar->add(qMin, qNew);
+
+										Pose p1;
+										p1.position = qMin->position;
+										Pose p2;
+										p2.position = qNew->position;
+
+										addLocationVis(id, p2,0.0,0.0,1.0,0.4);
+										addConnectionVis(id,p1,p2,1.0,0.0,0.0,0.4);
+										id++;
+										vis_pub_.publish(nodes_vis_);
+										vis_pub_.publish(connection_vis_);
+
+										//publish_plan();
 
                     for(int j = 0; j < Qnear.size(); j++){
                         Node *qNear = Qnear[j];
@@ -184,23 +197,29 @@ namespace path_planner {
     return true;
   }
 
-	void PathPlanner::publish_plan()
+	void PathPlanner::publishPlan()
 	{
-			Pose p;
-			p.orientation.w = 1.0;
-			nodes_vis_.markers.clear();
-			int j = 0;
+			Pose p1,p2;
+			p1.orientation.w = 1.0;
+			p2.orientation.w = 1.0;
+
+			//nodes_vis_.markers.clear();
 			for(int i = 0; i < (int)rrtstar->path.size(); i++) {
-					p.position = rrtstar->path[i]->position;
-					addLocationVis(i, p,0.0,1.0,0.0);
-					j = i;
+					p1.position = rrtstar->path[i]->position;
+					addLocationVis(i, p1,0.0,1.0,0.0,1.0);
+					if(i<(int)rrtstar->path.size()-1){
+						p2.position=rrtstar->path[i+1]->position;
+						addConnectionVis(i,p1,p2,0.0,1.0,0.0,1.0);
+					}
 			}
-			addLocationVis(j+1, startPose_,1.0,0.0,0.0);
-			addLocationVis(j+2, goalPose_,1.0,0.0,0.0);
+			addLocationVis(1, startPose_,1.0,0.0,0.0,1.0);
+			addLocationVis(2, goalPose_,1.0,0.0,0.0,1.0);
 			vis_pub_.publish(nodes_vis_);
+			vis_pub_.publish(connection_vis_);
+
 	}
 
-	void PathPlanner::addLocationVis(int id, geometry_msgs::Pose pose,float r, float g, float b)
+	void PathPlanner::addLocationVis(int id, geometry_msgs::Pose pose,float r, float g, float b,float alpha)
   {
     	visualization_msgs::Marker marker;
 			Pose p;
@@ -217,37 +236,38 @@ namespace path_planner {
       marker.scale.x = 0.1;
       marker.scale.y = 0.1;
       marker.scale.z = 0.1;
-      marker.color.a = 1.0; // Don't forget to set the alpha!
+      marker.color.a = alpha; // Don't forget to set the alpha!
       marker.color.r = r;
       marker.color.g = g;
       marker.color.b = b;
       nodes_vis_.markers.push_back(marker);
   }
 
-	void PathPlanner::addStartGoalVis(geometry_msgs::Pose start,geometry_msgs::Pose goal)
-  {
-    	visualization_msgs::Marker marker;
-      marker.header.frame_id = "/map";
-      marker.header.stamp = ros::Time();
-      marker.ns = "locations";
-      marker.id = nodes_vis_.markers.size()+1;
-      marker.type = visualization_msgs::Marker::SPHERE;
-      marker.action = visualization_msgs::Marker::ADD;
-      marker.pose = start;
-      marker.scale.x = 0.1;
-      marker.scale.y = 0.1;
-      marker.scale.z = 0.1;
-      marker.color.a = 1.0; // Don't forget to set the alpha!
-      marker.color.r = 1.0;
-      marker.color.g = 0.0;
-      marker.color.b = 0.0;
-      nodes_vis_.markers.push_back(marker);
-			//marker.id = marker.id + 1;
-			//marker.pose = goal;
-			//marker.header.stamp = ros::Time();
-			//nodes_vis_.markers.push_back(marker);
 
-  }
+	void PathPlanner::addConnectionVis(int id, geometry_msgs::Pose from, geometry_msgs::Pose to,float r, float g, float b,float alpha)
+	{
+			visualization_msgs::Marker marker;
+			marker.header.frame_id = "/map";
+			marker.header.stamp = ros::Time();
+			marker.ns = "connections";
+			marker.id = id;
+			marker.type = visualization_msgs::Marker::LINE_STRIP;
+			marker.action = visualization_msgs::Marker::ADD;
+			marker.points.push_back(from.position);
+			marker.points.push_back(to.position);
+			marker.scale.x = 0.05;
+			marker.scale.y = 0.2;
+			marker.scale.z = 0.2;
+
+			marker.color.r = r;
+			marker.color.g = g;
+		  marker.color.b = b;
+
+			marker.color.a = alpha; // Don't forget to set the alpha!
+
+			connection_vis_.markers.push_back(marker);
+	}
+
 }
 
 
