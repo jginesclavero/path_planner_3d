@@ -7,9 +7,8 @@
 #include <vector>
 #include <math.h>
 #include "geometry_msgs/Pose.h"
+#include <time.h>
 #define START_ORIENT 0.0
-#define RRTSTAR_NEIGHBOR_FACTOR 2
-#define END_DIST_THRESHOLD 0.15
 
 using namespace std;
 using namespace geometry_msgs;
@@ -46,7 +45,7 @@ public:
     Node *root, *lastNode;
     Point startPos, endPos;
     int max_iter;
-    float step_size;
+    float step_size,end_dist_threshold,rrtstar_neighbor_factor;
     int world_length, world_width, world_height;
 };
 

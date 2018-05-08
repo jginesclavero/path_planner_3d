@@ -22,43 +22,6 @@ namespace path_planner {
     makePlan(startPose_, goalPose_);
 		publishPlan();
     return true;
-
-		/*
-		octomap::point3d point(-1.5, -1.5, 0.0);
-		octomap::point3d point_end(-1.5, -1.5, 1.2);
-
-		octomap::KeyRay keyRay;
-		octomap::KeySet cells;
-
-		if (octree->computeRayKeys(point, point_end, keyRay)){
-			cells.insert(keyRay.begin(), keyRay.end());
-
-			int j = 0;
-			for (octomap::KeySet::iterator it = cells.begin(), end=cells.end(); it!= end; it++) {
-					octomap::OcTreeNode* node = octree->search(*it);
-					if(node){
-						octree->setNodeValue(*it,0,false);
-					}else{
-						octree->updateNode(*it, false);
-						octree->setNodeValue(*it, 0, false);
-					}
-			}
-		}
-
-		octomap_msgs::Octomap map;
-		if (octomap_msgs::fullMapToMsg(*octree, map)){
-			//ROS_INFO("send shortTerm_map");
-			map.header.frame_id = "map";
-			map.header.stamp = ros::Time::now();
-			shortTerm_map_pub.publish(map);
-			ROS_DEBUG("ShortTermMap published");
-		}else{
-			ROS_ERROR("Error serializing OctoMap");
-		}
-
-		return true;*/
-
-
   }
 
   void PathPlanner::mapCallback(const octomap_msgs::Octomap::ConstPtr& octomap){
@@ -70,7 +33,9 @@ namespace path_planner {
 
   void PathPlanner::makePlan(Pose start, Pose goal){
     rrtstar->max_iter = 5000;
-		rrtstar->step_size = 0.4;
+		rrtstar->step_size = 0.2;
+		rrtstar->end_dist_threshold=0.2;
+		rrtstar->rrtstar_neighbor_factor = 2.0;
     rrtstar->startPos = start.position;
     rrtstar->endPos = goal.position;
 		rrtstar->world_length = world_length_;
@@ -78,37 +43,24 @@ namespace path_planner {
 		rrtstar->world_height = world_height_;
     rrtstar->initialize();
 
-    //set length , width, height
-    //set maxIterations and stepSize from param
-    //rrtstar->setMaxIterations(ui->maxIterations->text().toInt());
-    //rrtstar->setStepSize(ui->stepSize->text().toInt());
-
-    // RRTSTAR Algorithm
 		int id=0;
     for(int i = 0; i < rrtstar->max_iter; i++) {
         Node *q = rrtstar->getRandomNode();
         if (q) {
             Node *qNearest = rrtstar->nearest(q->position);
-						//ROS_INFO("q [%f,%f]",q->position.x,q->position.y);
-						//ROS_INFO("qNearest [%f,%f]",qNearest->position.x,qNearest->position.y);
 
-            if (rrtstar->distance(q->position, qNearest->position) < rrtstar->step_size) {
+            if (rrtstar->distance(q->position, qNearest->position) > rrtstar->step_size) {
                 Pose newConfigPosOrient = rrtstar->newConfig(q, qNearest);
                 Point newConfigPos;
                 newConfigPos = newConfigPosOrient.position;
-								//ROS_INFO("newConfigPos [%f,%f,%f]",newConfigPos.x,newConfigPos.y,newConfigPos.z);
-								//ROS_INFO("qNearest [%f,%f]",qNearest->position.x,qNearest->position.y);
+
                 if (!isSegmentInObstacle(newConfigPos, qNearest->position)) {
-										//ROS_INFO("no isSegmentInObstacle");
                     Node *qNew = new Node;
                     qNew->position = newConfigPos;
-                		//  qNew->orientation = newConfigPosOrient.z(); MOVIDA!!!!!!!!!!
 										qNew->orientation = 0.0; //apaño momentaneo
-                    //qNew->path = path;
 
                     vector<Node *> Qnear;
-                    rrtstar->near(qNew->position, rrtstar->step_size*RRTSTAR_NEIGHBOR_FACTOR, Qnear);
-                    //std::cerr << "Found Nearby " << Qnear.size() << "\n";
+                    rrtstar->near(qNew->position, rrtstar->step_size*rrtstar->rrtstar_neighbor_factor, Qnear);
                     Node *qMin = qNearest;
                     double cmin = rrtstar->Cost(qNearest) + rrtstar->PathCost(qNearest, qNew);
                     for(int j = 0; j < Qnear.size(); j++){
@@ -133,7 +85,6 @@ namespace path_planner {
 										vis_pub_.publish(nodes_vis_);
 										vis_pub_.publish(connection_vis_);
 
-										//publish_plan();
 
                     for(int j = 0; j < Qnear.size(); j++){
                         Node *qNear = Qnear[j];
@@ -229,8 +180,6 @@ namespace path_planner {
       marker.id = id;
       marker.type = visualization_msgs::Marker::SPHERE;
       marker.action = visualization_msgs::Marker::ADD;
-			//p.position.x = pose.position.x - startPose_.position.x;
-			//p.position.y = pose.position.y - startPose_.position.y;
 
       marker.pose = pose;
       marker.scale.x = 0.1;

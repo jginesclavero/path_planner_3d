@@ -1,7 +1,7 @@
 
 <launch>
 
-  <arg name="world_name" default="$(find path_planner_3d)/worlds/map1.world"/>
+  <arg name="world_name" default="$(find path_planner_3d)/worlds/map3.world"/>
   <!--<arg name="world_name" default="$(find path_planner_3d)/worlds/map2.world"/>
   <arg name="world_name" default="$(find path_planner_3d)/worlds/map3.world"/>-->
 
@@ -17,16 +17,16 @@
 
   <arg name="robot_name" value="robot1"/>
   <!-- map3 -->
-    <!--
+
   <arg name="posx" value="4.5"/>
   <arg name="posy" value="10.5"/>
   <arg name="posYaw" value="0.0"/>
-  -->
 
+<!--
   <arg name="posx" value="2.5"/>
   <arg name="posy" value="2.5"/>
   <arg name="posYaw" value="0.0"/>
-
+-->
 
   <include file="$(find path_planner_3d)/launch/includes/robot_velodyne.launch.xml">
   <!--  <arg name="robot_name" value="$(arg robot_name)"/>-->
@@ -43,7 +43,7 @@
   <node pkg="tf" type="static_transform_publisher" name="$(arg robot_name)map_broadcaster" args="$(arg posx) $(arg posy) 0 0 0 0.0 map odom 100" />
 
   <node pkg="path_planner_3d" type="csv2Octomap_node" name="csv2Octomap_node" output="screen">
-    <param name="map_file" value="$(find path_planner_3d)/maps/csv/map1.csv" />
+    <param name="map_file" value="$(find path_planner_3d)/maps/csv/map3.csv" />
   </node>
 </launch>
 

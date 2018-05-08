@@ -11,6 +11,7 @@ RRTSTAR::RRTSTAR()
  */
 void RRTSTAR::initialize()
 {
+    srand(time(NULL));
     root = new Node;
     root->parent = NULL;
     root->position = startPos;
@@ -172,7 +173,7 @@ void RRTSTAR::add(Node *qNearest, Node *qNew)
  */
 bool RRTSTAR::reached()
 {
-    if (distance(lastNode->position, endPos) < END_DIST_THRESHOLD)
+    if (distance(lastNode->position, endPos) < end_dist_threshold)
         return true;
     return false;
 }
