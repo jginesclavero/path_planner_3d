@@ -26,13 +26,19 @@ void RRTSTAR::initialize()
  */
 Node* RRTSTAR::getRandomNode()
 {
+    bool ground_robot = true;
     Node* ret;
     Point point;
     point.x=((double) rand() / (RAND_MAX)) * world_length;
     point.y=((double) rand() / (RAND_MAX)) * world_width;
-    point.z=((double) rand() / (RAND_MAX)) * world_height;
+    if(ground_robot)
+      point.z=0.1;
+    else
+      point.z=((double) rand() / (RAND_MAX)) * world_height;
+
+
     float orient = ((double) rand() / (RAND_MAX)) * 2 * 3.142;
-    if (point.x >= 0 && point.x <= world_length && point.y >= 0 && point.y <= world_width && point.z <= world_height && point.z >= 0 && orient > 0 && orient < 2*3.142) {
+    if (point.x >= 0.0 && point.x <= world_length && point.y >= 0.0 && point.y <= world_width && point.z <= world_height && point.z >= 0.0 && orient > 0.0 && orient < 2*3.142) {
         ret = new Node;
         ret->position = point;
         ret->orientation = orient;

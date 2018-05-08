@@ -17,9 +17,11 @@
 
   <arg name="robot_name" value="robot1"/>
   <!-- map3 -->
-<!--  <arg name="posx" value="4.5"/>
+    <!--
+  <arg name="posx" value="4.5"/>
   <arg name="posy" value="10.5"/>
-  <arg name="posYaw" value="0.0"/>-->
+  <arg name="posYaw" value="0.0"/>
+  -->
 
   <arg name="posx" value="2.5"/>
   <arg name="posy" value="2.5"/>
@@ -38,7 +40,7 @@
     <rosparam command="load" file="$(find git_robots)/definition/sim/my_laser_config.yaml" />
   </node>
 
-  <node pkg="tf" type="static_transform_publisher" name="$(arg robot_name)map_broadcaster" args="2.5 2.5 0 0 0 0.0 map odom 100" />
+  <node pkg="tf" type="static_transform_publisher" name="$(arg robot_name)map_broadcaster" args="$(arg posx) $(arg posy) 0 0 0 0.0 map odom 100" />
 
   <node pkg="path_planner_3d" type="csv2Octomap_node" name="csv2Octomap_node" output="screen">
     <param name="map_file" value="$(find path_planner_3d)/maps/csv/map1.csv" />

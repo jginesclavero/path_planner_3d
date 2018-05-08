@@ -46,7 +46,7 @@ public:
     Node *root, *lastNode;
     Point startPos, endPos;
     int max_iter;
-    int step_size;
+    float step_size;
     int world_length, world_width, world_height;
 };
 

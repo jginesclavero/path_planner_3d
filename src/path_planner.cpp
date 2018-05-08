@@ -69,8 +69,8 @@ namespace path_planner {
   }
 
   void PathPlanner::makePlan(Pose start, Pose goal){
-    rrtstar->max_iter = 1000;
-		rrtstar->step_size = 1;
+    rrtstar->max_iter = 5000;
+		rrtstar->step_size = 0.4;
     rrtstar->startPos = start.position;
     rrtstar->endPos = goal.position;
 		rrtstar->world_length = world_length_;
@@ -96,7 +96,7 @@ namespace path_planner {
                 Pose newConfigPosOrient = rrtstar->newConfig(q, qNearest);
                 Point newConfigPos;
                 newConfigPos = newConfigPosOrient.position;
-								//ROS_INFO("newConfigPos [%f,%f]",newConfigPos.x,newConfigPos.y);
+								//ROS_INFO("newConfigPos [%f,%f,%f]",newConfigPos.x,newConfigPos.y,newConfigPos.z);
 								//ROS_INFO("qNearest [%f,%f]",qNearest->position.x,qNearest->position.y);
                 if (!isSegmentInObstacle(newConfigPos, qNearest->position)) {
 										//ROS_INFO("no isSegmentInObstacle");

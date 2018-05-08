@@ -101,11 +101,11 @@ namespace csv_2_octomap {
 				cost_now = cost_map.getCost(x,y);
 				if(cost_now > 0){
 					octomap::point3d point(x*map_res, y*map_res, 0.0);
-					octomap::point3d point_end(x*map_res,y*map_res,2.5);
+					octomap::point3d point_end(x*map_res,y*map_res,1.0);
 					if (octree->computeRayKeys(point, point_end, keyRay))
 			      occupied_cells.insert(keyRay.begin(), keyRay.end());
 				}else{
-					octomap::point3d point(x*map_res, y*map_res, 0.0);
+					octomap::point3d point(x*map_res, y*map_res, -map_res);
 					key = octree->coordToKey(point);
 			    occupied_cells.insert(key);
 				}
