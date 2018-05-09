@@ -80,14 +80,18 @@ namespace csv_2_octomap {
 				for(int j=0; j< sizeMapY*map_res; j++){
 					for(int cellY=0; cellY<cells;cellY++){
 						for(int cellX=0; cellX<cells;cellX++){
-							cost_map.setCost((i*cells + cellX),(j*cells + cellY),intMap[i][j]*254);
+							if(intMap[i][j] == 2){
+								cost_map.setCost((i*cells + cellX),(j*cells + cellY),1);
+							}else{
+								cost_map.setCost((i*cells + cellX),(j*cells + cellY),intMap[i][j]*254);
+							}
 							//ROS_INFO("%d",intMap[i*map_res][j*map_res]);
 						}
 					}
 				}
 			}
+		}
 	}
-}
 
 
 	void
@@ -99,9 +103,14 @@ namespace csv_2_octomap {
 		for(unsigned int y = 0; y < cost_map.getSizeInCellsY(); y++) {
 			for(unsigned int x = 0; x < cost_map.getSizeInCellsX(); x++) {
 				cost_now = cost_map.getCost(x,y);
-				if(cost_now > 0){
+				if(cost_now == 1){
 					octomap::point3d point(x*map_res, y*map_res, 0.0);
-					octomap::point3d point_end(x*map_res,y*map_res,1.0);
+					octomap::point3d point_end(x*map_res,y*map_res,0.5);
+					if (octree->computeRayKeys(point, point_end, keyRay))
+			      occupied_cells.insert(keyRay.begin(), keyRay.end());
+				}else if(cost_now > 1){
+					octomap::point3d point(x*map_res, y*map_res, 0.0);
+					octomap::point3d point_end(x*map_res,y*map_res,2.0);
 					if (octree->computeRayKeys(point, point_end, keyRay))
 			      occupied_cells.insert(keyRay.begin(), keyRay.end());
 				}else{

@@ -47,6 +47,7 @@ public:
     int max_iter;
     float step_size,end_dist_threshold,rrtstar_neighbor_factor;
     int world_length, world_width, world_height;
+    bool ground_robot;
 };
 
 #endif // RRTSTAR_H

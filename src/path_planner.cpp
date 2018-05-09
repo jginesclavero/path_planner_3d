@@ -21,6 +21,8 @@ namespace path_planner {
 
     makePlan(startPose_, goalPose_);
 		publishPlan();
+
+		res.plan = path;
     return true;
   }
 
@@ -35,12 +37,13 @@ namespace path_planner {
     rrtstar->max_iter = 5000;
 		rrtstar->step_size = 0.2;
 		rrtstar->end_dist_threshold=0.2;
-		rrtstar->rrtstar_neighbor_factor = 2.0;
+		rrtstar->rrtstar_neighbor_factor = 3.0;
     rrtstar->startPos = start.position;
     rrtstar->endPos = goal.position;
 		rrtstar->world_length = world_length_;
 		rrtstar->world_width = world_width_;
 		rrtstar->world_height = world_height_;
+		rrtstar->ground_robot = false;
     rrtstar->initialize();
 
 		int id=0;
@@ -151,9 +154,10 @@ namespace path_planner {
 	void PathPlanner::publishPlan()
 	{
 			Pose p1,p2;
+			PoseStamped p;
 			p1.orientation.w = 1.0;
 			p2.orientation.w = 1.0;
-
+			path.poses.resize((int)rrtstar->path.size());
 			//nodes_vis_.markers.clear();
 			for(int i = 0; i < (int)rrtstar->path.size(); i++) {
 					p1.position = rrtstar->path[i]->position;
@@ -162,6 +166,9 @@ namespace path_planner {
 						p2.position=rrtstar->path[i+1]->position;
 						addConnectionVis(i,p1,p2,0.0,1.0,0.0,1.0);
 					}
+					p.pose = p1;
+					p.header.frame_id = "/map";
+					path.poses[i] = p;
 			}
 			addLocationVis(1, startPose_,1.0,0.0,0.0,1.0);
 			addLocationVis(2, goalPose_,1.0,0.0,0.0,1.0);

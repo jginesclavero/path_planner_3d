@@ -27,7 +27,6 @@ void RRTSTAR::initialize()
  */
 Node* RRTSTAR::getRandomNode()
 {
-    bool ground_robot = true;
     Node* ret;
     Point point;
     point.x=((double) rand() / (RAND_MAX)) * world_length;
@@ -123,9 +122,6 @@ Pose RRTSTAR::newConfig(Node *q, Node *qNearest)
     pos.position.x = from.x + step_size * intermediate.x;
     pos.position.y = from.y + step_size * intermediate.y;
     pos.position.z = from.z + step_size * intermediate.z;
-    //std::cerr << pos.position.x << '\n';
-    //std::cerr << pos.position.y << '\n';
-    //std::cerr << pos.position.z << '\n';
     pos.orientation.w = 1.0;
     return pos;
 }
@@ -162,8 +158,6 @@ void RRTSTAR::add(Node *qNearest, Node *qNew)
     qNew->cost = qNearest->cost + PathCost(qNearest, qNew);
     qNearest->children.push_back(qNew);
     nodes.push_back(qNew);
-    //std::cerr << "x: " << qNew->position.x << " y: " <<qNew->position.y << '\n';
-
     lastNode = qNew;
 }
 
@@ -199,10 +193,3 @@ void RRTSTAR::setMaxIterations(int iter)
     }
     delete root;
 }*/
-
-/*int main(int argc, char **argv)
-{
-
-   return 0;
-
- }*/

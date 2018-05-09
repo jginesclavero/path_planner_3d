@@ -65,6 +65,9 @@ add_executable(csv2Octomap_node src/csv2Octomap.cpp)
 add_dependencies(csv2Octomap_node ${catkin_EXPORTED_TARGETS})
 target_link_libraries(csv2Octomap_node ${catkin_LIBRARIES})
 
+add_executable(fakeLocalization_node src/fake_localization_node.cpp)
+add_dependencies(fakeLocalization_node ${catkin_EXPORTED_TARGETS})
+target_link_libraries(fakeLocalization_node ${catkin_LIBRARIES})
 
 
 #############

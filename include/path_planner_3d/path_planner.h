@@ -39,6 +39,7 @@ namespace path_planner {
 		visualization_msgs::MarkerArray nodes_vis_,connection_vis_;
 		double world_length_,world_width_,world_height_;
 		Pose startPose_,goalPose_;
+		nav_msgs::Path path;
 
     ros::ServiceServer plannerSrv;
 		void addStartGoalVis(geometry_msgs::Pose start,geometry_msgs::Pose goal);
