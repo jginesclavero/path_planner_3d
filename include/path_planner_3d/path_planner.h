@@ -8,7 +8,7 @@
 #include <octomap_msgs/BoundingBoxQuery.h>
 #include <octomap_msgs/conversions.h>
 #include <octomap_ros/conversions.h>
-
+#include "geometry_msgs/Pose.h"
 #include "path_planner_3d/rrtstar.h"
 #include "nav_msgs/GetPlan.h"
 
@@ -17,6 +17,9 @@
 
 #ifndef PATHPLANNER_H_
 #define PATHPLANNER_H_
+
+using namespace geometry_msgs;
+
 
 namespace path_planner {
 

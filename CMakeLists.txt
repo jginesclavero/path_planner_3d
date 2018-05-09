@@ -69,6 +69,10 @@ add_executable(fakeLocalization_node src/fake_localization_node.cpp)
 add_dependencies(fakeLocalization_node ${catkin_EXPORTED_TARGETS})
 target_link_libraries(fakeLocalization_node ${catkin_LIBRARIES})
 
+add_executable(kobuki_controller_node src/kobuki_controller.cpp)
+add_dependencies(kobuki_controller_node ${catkin_EXPORTED_TARGETS})
+target_link_libraries(kobuki_controller_node ${catkin_LIBRARIES})
+
 
 #############
 ## Install ##
