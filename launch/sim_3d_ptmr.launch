@@ -46,6 +46,9 @@
     <param name="map_file" value="$(find path_planner_3d)/maps/csv/map1.csv" />
   </node>
 
-  <!--<node pkg="path_planner_3d" type="fakeLocalization_node" name="fakeLocalization_node" output="screen"/>-->
+  <node pkg="path_planner_3d" type="fakeLocalization_node" name="fakeLocalization_node" output="screen"/>
+
+  <node pkg="path_planner_3d" type="path_planner_3d_node" name="path_planner_3d_node" output="screen"/>
+
 
 </launch>
