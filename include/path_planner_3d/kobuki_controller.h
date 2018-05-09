@@ -6,6 +6,7 @@
 #include "nav_msgs/GetPlan.h"
 
 using namespace geometry_msgs;
+using namespace nav_msgs;
 
 using namespace std;
 
@@ -15,16 +16,19 @@ namespace kobuki_controller {
 	{
   public:
       KobukiController();
-      void poseUpdaterCallback(const Pose::ConstPtr& actualPose);
-
+      void poseUpdaterCallback(const PoseStamped::ConstPtr& actualPose);
+      void getPlanPath();
 
   private:
     ros::NodeHandle nh_;
     ros::Subscriber poseUpdater_sub;
-    //ros::Subscriber pathPlan_sub;
+    ros::ServiceClient pathPlan_srvClt;
 
     Pose startPose_,goalPose_;
     Pose actualPose_;
+
+    bool poseReady;
+
 
 		//ros::Publisher vis_pub_;
 

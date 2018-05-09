@@ -18,6 +18,12 @@ namespace path_planner {
 		goalPose_ = req.goal.pose;
 
 		ROS_INFO("Planning");
+		ROS_INFO("Start Pose: ");
+		ROS_INFO("\tx: %f",startPose_.position.x);
+		ROS_INFO("\ty: %f",startPose_.position.y);
+		ROS_INFO("\tz: %f",startPose_.position.z);
+		ROS_INFO("Planning");
+
 
     makePlan(startPose_, goalPose_);
 		publishPlan();

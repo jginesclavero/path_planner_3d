@@ -74,9 +74,9 @@ public:
 		tf_gt = G2M*tf_gt ;
 		tf::transformTFToMsg(tf_gt, gt_res);
 
-		gt.position.x = -gt_res.translation.x;
-		gt.position.y = -gt_res.translation.y;
-		gt.position.z = -gt_res.translation.z;
+		gt.position.x = gt_res.translation.x;
+		gt.position.y = gt_res.translation.y;
+		gt.position.z = gt_res.translation.z;
 		gt.orientation = gt_res.rotation;
 
 		posecv.pose = gt;
