@@ -10,7 +10,7 @@
     <arg name="use_sim_time" value="true"/>
     <arg name="debug" value="false"/>
     <arg name="world_name" value="$(arg world_name)"/>
-    <arg name="gui" value="true"/>
+    <arg name="gui" value="false"/>
 
   </include>
 
