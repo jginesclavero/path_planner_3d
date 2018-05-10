@@ -33,6 +33,7 @@ namespace csv_2_octomap {
 		void csv2CostMap(std::string);
 		void transform2DtoOct(costmap_2d::Costmap2D cost_map);
 		void publishFullOctoMap();
+		void inflateMap(float robot_radius);
     ros::NodeHandle nh_;
     ros::Subscriber octoscan_sub;
 		ros::Publisher octomap_pub;
@@ -50,9 +51,10 @@ namespace csv_2_octomap {
 		unsigned m_treeDepth;
 		unsigned m_maxTreeDepth;
 
-		 std::vector<std::vector<int>> intMap; //For CSV to CostMap conversion
-		 int sizeMapX, sizeMapY;
-		 float cells=10;
+		std::vector<std::vector<int>> intMap; //For CSV to CostMap conversion
+		int sizeMapX, sizeMapY;
+		float cells=10;
+		float robot_radius;
 
 	};
 }

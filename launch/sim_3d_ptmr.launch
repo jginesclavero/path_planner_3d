@@ -44,6 +44,7 @@
 
   <node pkg="path_planner_3d" type="csv2Octomap_node" name="csv2Octomap_node" output="screen">
     <param name="map_file" value="$(find path_planner_3d)/maps/csv/map1.csv" />
+    <param name="robot_radius" value="0.2" />
   </node>
 
   <node pkg="path_planner_3d" type="fakeLocalization_node" name="fakeLocalization_node" output="screen"/>

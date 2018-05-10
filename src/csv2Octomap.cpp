@@ -34,6 +34,9 @@ namespace csv_2_octomap {
     }
 		cost_map_publisher_.publishCostmap();
 		transform2DtoOct(cost_map);
+		if (nh_.getParam("robot_radius", robot_radius)) {
+			inflateMap(robot_radius);
+    }
 		publishFullOctoMap();
 	}
 
@@ -138,6 +141,33 @@ namespace csv_2_octomap {
 			ROS_DEBUG("ShortTermMap published");
 		}else
 			ROS_ERROR("Error serializing OctoMap");
+	}
+
+	void Csv2Octomap::inflateMap(float robot_radius){
+		ROS_INFO("inflate_process");
+		octomap::KeySet inflate_cells;
+		octomap::KeyRay keyRay_x,keyRay_y;
+
+		for (octomap::OcTree::iterator it = octree->begin(octree->getTreeDepth()),end = octree->end(); it != end; ++it){
+			//OcTreeNode* node = octree->search(it.getKey());
+			octomap::point3d point = octree->keyToCoord(it.getKey());
+			if(point.z() > map_res){
+				octomap::point3d point_infl_x_1(point.x() + robot_radius,point.y(), point.z());
+				octomap::point3d point_infl_x_2(point.x() - robot_radius,point.y(), point.z());
+				if (octree->computeRayKeys(point_infl_x_1, point_infl_x_2, keyRay_x))
+					inflate_cells.insert(keyRay_x.begin(), keyRay_x.end());
+
+				octomap::point3d point_infl_y_1(point.x(),point.y() + robot_radius, point.z());
+				octomap::point3d point_infl_y_2(point.x(),point.y() - robot_radius, point.z());
+				if (octree->computeRayKeys(point_infl_y_1, point_infl_y_2, keyRay_y))
+					inflate_cells.insert(keyRay_y.begin(), keyRay_y.end());
+			}
+		}
+		for (octomap::KeySet::iterator it = inflate_cells.begin(), end=inflate_cells.end(); it!= end; it++) {
+				octree->updateNode(*it,true);
+				octree->setNodeValue(*it,1,true);
+	  }
+		octree->updateInnerOccupancy();
 	}
 
 
