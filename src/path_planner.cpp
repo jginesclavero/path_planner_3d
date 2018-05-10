@@ -49,7 +49,7 @@ namespace path_planner {
 		rrtstar->world_length = world_length_;
 		rrtstar->world_width = world_width_;
 		rrtstar->world_height = world_height_;
-		rrtstar->ground_robot = false;
+		rrtstar->ground_robot = true;
     rrtstar->initialize();
 
 		int id=0;
