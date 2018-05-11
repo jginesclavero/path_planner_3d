@@ -45,7 +45,7 @@ namespace kobuki_controller {
         // ROS_INFO("\tPos y: %.2f",resPlan.plan.poses[0].pose.position.y);
 				ROS_INFO("Start following Path\n");
 				// moveKobuki(resPlan);
-				moveKobuki();
+				//moveKobuki();
 
       }
     }
@@ -95,7 +95,7 @@ namespace kobuki_controller {
 		}
 
 		//void KobukiController::moveKobuki(GetPlan::Response plan){
-		void KobukiController::moveKobuki(){
+		/*void KobukiController::moveKobuki(){
 			ROS_INFO("Moving Kobuki...");
 
 			unsigned long int pathLong= resPlan.plan.poses.size();
@@ -119,21 +119,21 @@ namespace kobuki_controller {
 			double thresholdY=0.2;
 			double thresholdZ=0.2;
 			double thresholdW=0.2;
-			double diffX = abs(nextPose.position.x - actualPose.position.x);
-			double diffY = abs(nextPose.position.y - actualPose.position.y);
-			double diffZ = abs(nextPose.orientation.z - actualPose.orientation.z);
-			double diffW = abs(nextPose.orientation.w - actualPose.orientation.w);
+			double diffX = abs(nextPose.position.x - actualPose_.position.x);
+			double diffY = abs(nextPose.position.y - actualPose_.position.y);
+			double diffZ = abs(nextPose.orientation.z - actualPose_.orientation.z);
+			double diffW = abs(nextPose.orientation.w - actualPose_.orientation.w);
 
 			ROS_INFO("Punto Inicial:");
 			ROS_INFO("\tPosicion:");
-			ROS_INFO("\t\tx: %f ",actualPose.position.x);
-			ROS_INFO("\t\ty: %f ",actualPose.position.y);
-			ROS_INFO("\t\tz: %f ",actualPose.position.z);
-			ROS_INFO("\tPosicion:");
-			ROS_INFO("\t\tx: %f ",actualPose.orientation.x);
-			ROS_INFO("\t\ty: %f ",actualPose.orientation.y);
-			ROS_INFO("\t\tz: %f ",actualPose.orientation.z);
-			ROS_INFO("\t\tw: %f \n",actualPose.orientation.w);
+			ROS_INFO("\t\tx: %f ",actualPose_.position.x);
+			ROS_INFO("\t\ty: %f ",actualPose_.position.y);
+			ROS_INFO("\t\tz: %f ",actualPose_.position.z);
+			ROS_INFO("\tOrientacion:");
+			ROS_INFO("\t\tx: %f ",actualPose_.orientation.x);
+			ROS_INFO("\t\ty: %f ",actualPose_.orientation.y);
+			ROS_INFO("\t\tz: %f ",actualPose_.orientation.z);
+			ROS_INFO("\t\tw: %f \n",actualPose_.orientation.w);
 
 			ROS_INFO("Punto Final:");
 			ROS_INFO("\tPosicion:");
@@ -147,7 +147,7 @@ namespace kobuki_controller {
 			ROS_INFO("\t\tw: %f ",nextPose.orientation.w);
 
 			while( diffX > thresholdX){
-				diffX = abs(nextPose.position.x - actualPose.position.x);
+				diffX = abs(nextPose.position.x - actualPose_.position.x);
 				//diffY = abs(nextPose.position.y - actualPose.position.y);
 				ROS_INFO("DiffX: %f",diffX);
 				moveForward(0.1);
@@ -182,6 +182,70 @@ namespace kobuki_controller {
 			// ROS_INFO("Turn Right");
 			// turnRight(2.0);
 			// sleep(2);
+		}*/
+
+		void KobukiController::step(){
+			unsigned long int pathLong= resPlan.plan.poses.size();
+			if(pathLong <= 0){
+				return;
+			}
+			ROS_INFO("Moving Kobuki...");
+			Pose actualPose = actualPose_;
+			Pose goalPose = resPlan.plan.poses[0].pose;
+			Pose nextPose = resPlan.plan.poses[pathLong-3].pose;
+			Pose tempPose;
+
+			// bool poseAchieved=false;
+			// for(int i=pathLong-2; i > pathLong; i--){
+			// 		nextPose = plan.plan.poses[i];
+			//
+			// 		while(!poseAchieved){
+			//
+			//
+			// 			poseAchieved=true;
+			// 		}
+			// }
+
+			double thresholdX=0.2;
+			double thresholdY=0.2;
+			double thresholdZ=0.2;
+			double thresholdW=0.2;
+			double diffX = abs(nextPose.position.x - actualPose_.position.x);
+			double diffY = abs(nextPose.position.y - actualPose_.position.y);
+			double diffZ = abs(nextPose.orientation.z - actualPose_.orientation.z);
+			double diffW = abs(nextPose.orientation.w - actualPose_.orientation.w);
+
+			ROS_INFO("Punto Inicial:");
+			ROS_INFO("\tPosicion:");
+			ROS_INFO("\t\tx: %f ",actualPose_.position.x);
+			ROS_INFO("\t\ty: %f ",actualPose_.position.y);
+			ROS_INFO("\t\tz: %f ",actualPose_.position.z);
+			ROS_INFO("\tOrientacion:");
+			ROS_INFO("\t\tx: %f ",actualPose_.orientation.x);
+			ROS_INFO("\t\ty: %f ",actualPose_.orientation.y);
+			ROS_INFO("\t\tz: %f ",actualPose_.orientation.z);
+			ROS_INFO("\t\tw: %f \n",actualPose_.orientation.w);
+
+			ROS_INFO("Punto Final:");
+			ROS_INFO("\tPosicion:");
+			ROS_INFO("\t\tx: %f ",nextPose.position.x);
+			ROS_INFO("\t\ty: %f ",nextPose.position.y);
+			ROS_INFO("\t\tz: %f ",nextPose.position.z);
+			ROS_INFO("\tOrientacion:");
+			ROS_INFO("\t\tx: %f ",nextPose.orientation.x);
+			ROS_INFO("\t\ty: %f ",nextPose.orientation.y);
+			ROS_INFO("\t\tz: %f ",nextPose.orientation.z);
+			ROS_INFO("\t\tw: %f ",nextPose.orientation.w);
+
+			if( diffX > thresholdX){
+				diffX = abs(nextPose.position.x - actualPose_.position.x);
+				//diffY = abs(nextPose.position.y - actualPose.position.y);
+				ROS_INFO("DiffX: %f",diffX);
+				moveForward(0.1);
+			}
+
+			ROS_INFO("Target reached");
+
 		}
 
 }
@@ -193,9 +257,12 @@ int main(int argc, char **argv)
    ros::init(argc, argv, "kobuki_controller_node");
    ros::NodeHandle n;
    KobukiController kobukiController;
-
-
-   ros::spin();
+	 ros::Rate loop_rate(10);
+	 while (ros::ok()){
+		 kobukiController.step();
+		 ros::spinOnce();
+		 loop_rate.sleep();
+	 }
    return 0;
 
  }

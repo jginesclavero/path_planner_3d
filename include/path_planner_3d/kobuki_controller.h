@@ -27,6 +27,7 @@ namespace kobuki_controller {
 			void moveBack(double speed);
 			void turnLeft(double speed);
 			void turnRight(double speed);
+			void step();
 
 
   private:
