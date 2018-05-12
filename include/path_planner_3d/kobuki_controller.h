@@ -21,13 +21,16 @@ namespace kobuki_controller {
       KobukiController();
       void poseUpdaterCallback(const PoseStamped::ConstPtr& actualPose);
       void getPlanPath();
-			//void moveKobuki(GetPlan::Response plan);
-			void moveKobuki();
+			void step();
 			void moveForward(double speed);
 			void moveBack(double speed);
 			void turnLeft(double speed);
 			void turnRight(double speed);
-			void step();
+			Pose degreesToQuaternion(double roll, double pitch, double yaw);
+			void quaternionToDegreeAngle(Pose q, double& roll, double& pitch, double& yaw);
+			double coordinatesToAngle(double initX ,double initY, double goalX, double goalY);
+			bool goalReached;
+			bool turnReached;
 
 
   private:
@@ -37,7 +40,7 @@ namespace kobuki_controller {
 		ros::Publisher kobuki_move;
 
     Pose startPose_,goalPose_;
-    Pose actualPose_;
+    Pose kobukiPose_;
     bool poseReady;
 
 		GetPlan::Request reqPlan;
