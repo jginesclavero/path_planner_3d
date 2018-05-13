@@ -30,7 +30,6 @@ namespace kobuki_controller {
 			void quaternionToDegreeAngle(Pose q, double& roll, double& pitch, double& yaw);
 			double coordinatesToAngle(double initX ,double initY, double goalX, double goalY);
 			bool goalReached;
-			bool turnReached;
 
 
   private:
@@ -45,6 +44,10 @@ namespace kobuki_controller {
 
 		GetPlan::Request reqPlan;
 		GetPlan::Response resPlan;
+
+		bool turnReached;
+		int remainingSteps;
+
 
 	};
 }

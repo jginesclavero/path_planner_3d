@@ -34,6 +34,7 @@ namespace kobuki_controller {
 			ROS_INFO("Plan received");
 			ROS_INFO("Size of path: %lu",resPlan.plan.poses.size());
 			ROS_INFO("Start following Path\n");
+			remainingSteps = resPlan.plan.poses.size()-1;
 		}
 	}
 
@@ -45,38 +46,72 @@ namespace kobuki_controller {
 		//ROS_INFO("Moving Kobuki...");
 		Pose kobukiPose = kobukiPose_;
 		//Pose goalPose = resPlan.plan.poses[0].pose;
-		Pose actualPose = resPlan.plan.poses[pathLong-1].pose;
-		Pose nextPose = resPlan.plan.poses[pathLong-2].pose;
-		Pose tempPose;
+		//Pose actualPose = resPlan.plan.poses[pathLong-1].pose;
+		Pose nextPose = resPlan.plan.poses[remainingSteps-1].pose;
+		Pose rotPose;
 
-		double thresholdX = 0.05;
-		double thresholdY = 0.05;
-		double angleThZ = 0.5;
-		double thresholdW = 0.002;
+		double minThresholdX = 0.1;
+		double minThresholdY = 0.1;
+		double angleThZ = 1;
 
-		double angle = coordinatesToAngle(kobukiPose.position.x, kobukiPose.position.y, nextPose.position.x, nextPose.position.y);
-		tempPose = degreesToQuaternion(0.0,0.0,angle);
+		double angle=0;
+		do{
+			angle = coordinatesToAngle(kobukiPose.position.x, kobukiPose.position.y, nextPose.position.x, nextPose.position.y);
+		}while(angle>360);
+		rotPose = degreesToQuaternion(0.0,0.0,angle);
 
 		double kobukiAngleX,kobukiAngleY,kobukiAngleZ;
 		quaternionToDegreeAngle(kobukiPose,kobukiAngleX,kobukiAngleY,kobukiAngleZ);
 
 		double diffX = nextPose.position.x - kobukiPose.position.x;
 		double diffY = nextPose.position.y - kobukiPose.position.y;
-		double diffZ = tempPose.orientation.w - kobukiPose.orientation.w;
-		double diffW = tempPose.orientation.z - kobukiPose.orientation.z;
+		double diffZ = rotPose.orientation.w - kobukiPose.orientation.w;
+		double diffW = rotPose.orientation.z - kobukiPose.orientation.z;
+
+		ROS_INFO("Point %lu",pathLong-remainingSteps);
+		ROS_INFO("\tx: %f",nextPose.position.x);
+		ROS_INFO("\ty: %f",nextPose.position.y);
+		ROS_INFO("\tangle: %f",angle);
+		ROS_INFO("Robot Position: ");
+		ROS_INFO("\tx: %f",kobukiPose.position.x);
+		ROS_INFO("\ty: %f",kobukiPose.position.y);
+		ROS_INFO("\tangle: %f",kobukiAngleZ);
 
 		if(!turnReached){
-			if(abs(kobukiAngleZ - angle) > angleThZ){
-				turnLeft(0.15);
+			if(kobukiAngleZ - angle < angleThZ){
+				turnLeft(0.1);
+			}else{ //if(kobukiAngleZ - angle > angleThZ)
+				turnRight(0.1);
 			}
-			else{
+			if(abs(kobukiAngleZ - angle) < angleThZ){
 				turnReached=true;
 			}
 		}else{
-			if(abs(diffX)>thresholdX || abs(diffY)>thresholdY){
-				moveForward(0.20);
+			if(remainingSteps>0){
+				if(abs(diffX)>minThresholdX || abs(diffY)>minThresholdY){
+					moveForward(0.3);
+				}else {
+					remainingSteps--;
+					ROS_INFO(" ");
+					ROS_INFO("Point %lu reached",pathLong-remainingSteps);
+					ROS_INFO("Point: ");
+					ROS_INFO("\tx: %f",nextPose.position.x);
+					ROS_INFO("\ty: %f",nextPose.position.y);
+					ROS_INFO("\tangle: %f",angle);
+					ROS_INFO("Robot Position: ");
+					ROS_INFO("\tx: %f",kobukiPose.position.x);
+					ROS_INFO("\ty: %f",kobukiPose.position.y);
+					ROS_INFO("\tangle: %f",kobukiAngleZ);
+					if(remainingSteps>0){
+						ROS_INFO("Next Position: ");
+						ROS_INFO("\tx: %f",resPlan.plan.poses[remainingSteps-1].pose.position.x);
+						ROS_INFO("\ty: %f",resPlan.plan.poses[remainingSteps-1].pose.position.y);
+						turnReached=false;
+					}
+				}
 			}else{
 				goalReached=true;
+				turnReached=false;
 				ROS_INFO("Target reached");
 				ROS_INFO("Target: ");
 				ROS_INFO("\tx: %f",nextPose.position.x);
@@ -86,6 +121,7 @@ namespace kobuki_controller {
 				ROS_INFO("\tx: %f",kobukiPose.position.x);
 				ROS_INFO("\ty: %f",kobukiPose.position.y);
 				ROS_INFO("\tangle: %f",kobukiAngleZ);
+
 			}
 		}
 	}
@@ -194,7 +230,7 @@ int main(int argc, char **argv)
 	ros::init(argc, argv, "kobuki_controller_node");
 	ros::NodeHandle n;
 	KobukiController kobukiController;
-	ros::Rate loop_rate(50);
+	ros::Rate loop_rate(200);
 	while (ros::ok()){
 		if(!kobukiController.goalReached){
 			kobukiController.step();
