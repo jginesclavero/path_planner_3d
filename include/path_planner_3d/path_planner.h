@@ -31,7 +31,7 @@ namespace path_planner {
       void getPlan();
       bool isSegmentInObstacle(Point p1,Point p2);
       bool makePlanSrv(nav_msgs::GetPlan::Request &req, nav_msgs::GetPlan::Response &res);
-      void makePlan(Pose start, Pose goal);
+      void makePlan();
 
   private:
     ros::NodeHandle nh_;
@@ -49,6 +49,7 @@ namespace path_planner {
 		void addLocationVis(int id, geometry_msgs::Pose pose,float r, float g, float b,float alpha);
 		void addConnectionVis(int id, geometry_msgs::Pose from, geometry_msgs::Pose to,float r, float g, float b,float alpha);
 		void publishPlan();
+		void initPlanner(Pose start, Pose goal);
 
 
 	};

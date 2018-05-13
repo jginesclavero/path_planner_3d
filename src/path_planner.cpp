@@ -22,13 +22,35 @@ namespace path_planner {
 		ROS_INFO("\tx: %f",startPose_.position.x);
 		ROS_INFO("\ty: %f",startPose_.position.y);
 		ROS_INFO("\tz: %f",startPose_.position.z);
-
-    makePlan(startPose_, goalPose_);
+		initPlanner(startPose_, goalPose_);
+    makePlan();
 		publishPlan();
 
 		res.plan = path;
     return true;
   }
+
+	void PathPlanner::initPlanner(Pose start, Pose goal){
+		if (nh_.getParam("max_iter", rrtstar->max_iter));
+		if (nh_.getParam("step_size", rrtstar->step_size));
+		if (nh_.getParam("end_dist_threshold", rrtstar->end_dist_threshold));
+		if (nh_.getParam("rrtstar_neighbor_factor", rrtstar->rrtstar_neighbor_factor));
+		if (nh_.getParam("ground_robot", rrtstar->ground_robot));
+
+
+    /*rrtstar->max_iter = 5000;
+		rrtstar->step_size = 0.2;
+		rrtstar->end_dist_threshold=0.2;
+		rrtstar->rrtstar_neighbor_factor = 3.0;
+		rrtstar->ground_robot = true;*/
+    rrtstar->startPos = start.position;
+    rrtstar->endPos = goal.position;
+		rrtstar->world_length = world_length_;
+		rrtstar->world_width = world_width_;
+		rrtstar->world_height = world_height_;
+    rrtstar->initialize();
+	}
+
 
   void PathPlanner::mapCallback(const octomap_msgs::Octomap::ConstPtr& octomap){
     ROS_INFO("Octomap received");
@@ -37,19 +59,7 @@ namespace path_planner {
 		ROS_INFO("length %f, width %f, height %f",world_length_,world_width_,world_height_);
   }
 
-  void PathPlanner::makePlan(Pose start, Pose goal){
-    rrtstar->max_iter = 5000;
-		rrtstar->step_size = 0.2;
-		rrtstar->end_dist_threshold=0.2;
-		rrtstar->rrtstar_neighbor_factor = 3.0;
-    rrtstar->startPos = start.position;
-    rrtstar->endPos = goal.position;
-		rrtstar->world_length = world_length_;
-		rrtstar->world_width = world_width_;
-		rrtstar->world_height = world_height_;
-		rrtstar->ground_robot = true;
-    rrtstar->initialize();
-
+  void PathPlanner::makePlan(){
 		int id=0;
     for(int i = 0; i < rrtstar->max_iter; i++) {
         Node *q = rrtstar->getRandomNode();
