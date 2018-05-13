@@ -26,6 +26,7 @@ namespace kobuki_controller {
 			void moveBack(double speed);
 			void turnLeft(double speed);
 			void turnRight(double speed);
+			void stop();
 			Pose degreesToQuaternion(double roll, double pitch, double yaw);
 			void quaternionToDegreeAngle(Pose q, double& roll, double& pitch, double& yaw);
 			double coordinatesToAngle(double initX ,double initY, double goalX, double goalY);

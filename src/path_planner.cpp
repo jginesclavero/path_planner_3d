@@ -22,8 +22,6 @@ namespace path_planner {
 		ROS_INFO("\tx: %f",startPose_.position.x);
 		ROS_INFO("\ty: %f",startPose_.position.y);
 		ROS_INFO("\tz: %f",startPose_.position.z);
-		ROS_INFO("Planning");
-
 
     makePlan(startPose_, goalPose_);
 		publishPlan();
