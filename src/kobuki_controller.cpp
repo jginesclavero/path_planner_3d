@@ -2,31 +2,29 @@
 
 namespace kobuki_controller {
 
-	KobukiController::KobukiController():nh_("~"),poseReady(false),turnReached(false),goalReached(false){
+	KobukiController::KobukiController():nh_("~"),pathReady(false),turnReached(false),goalReached(false){
 
 		poseUpdater_sub = nh_.subscribe("/pose", 1, &KobukiController::poseUpdaterCallback, this);
+		goal_sub = nh_.subscribe("/clicked_point", 1, &KobukiController::goalPoseCallback, this);
 		pathPlan_srvClt = nh_.serviceClient<GetPlan>("/make_plan");
 		kobuki_move = nh_.advertise<Twist>("/mobile_base/commands/velocity", 100);
 	}
 
 	void KobukiController::poseUpdaterCallback(const PoseStamped::ConstPtr& actualPose){
-
 		kobukiPose_ = actualPose->pose;
+	}
 
-		if(!poseReady){
-			getPlanPath();
-			poseReady=true;
-		}
-
+	void KobukiController::goalPoseCallback(const PointStamped::ConstPtr& goal){
+		getPlanPath(goal->point);
 	}
 
 
-	void KobukiController::getPlanPath(){
+	void KobukiController::getPlanPath(Point goal){
 
 		kobukiPose_.position.z = 0.1;
 		reqPlan.start.pose = kobukiPose_;
-		goalPose_.position.x = 7.0;
-		goalPose_.position.y = 2.0;
+		goalPose_.position.x = goal.x;
+		goalPose_.position.y = goal.y;
 		goalPose_.position.z = 0.1;
 		goalPose_.orientation.w = 1.0;
 		reqPlan.goal.pose = goalPose_;
@@ -35,49 +33,32 @@ namespace kobuki_controller {
 			ROS_INFO("Size of path: %lu",resPlan.plan.poses.size());
 			ROS_INFO("Start following Path\n");
 			remainingSteps = resPlan.plan.poses.size()-1;
+			pathReady = true;
 		}
-
-		/*for(int i=0;i<resPlan.plan.poses.size()-1;i++){
-			ROS_INFO("i: %d",i);
-			ROS_INFO("pos x: %f",resPlan.plan.poses[i].pose.position.x);
-			ROS_INFO("pos y: %f",resPlan.plan.poses[i].pose.position.y);
-		}*/
 	}
 
 	void KobukiController::step(){
-		if(!poseReady){
+		if(!pathReady){
 			return;
 		}
-		std::cerr << "step" << '\n';
 		unsigned long int pathLong= resPlan.plan.poses.size();
-		//ROS_INFO("Moving Kobuki...");
 		Pose kobukiPose = kobukiPose_;
-		//Pose goalPose = resPlan.plan.poses[0].pose;
-		//Pose actualPose = resPlan.plan.poses[pathLong-1].pose;
 		Pose nextPose = resPlan.plan.poses[remainingSteps-1].pose;
-		Pose rotPose;
 
 		double minThresholdX = 0.1;
 		double minThresholdY = 0.1;
-		double angleThZ = 1;
+
+		double angleThZ = 2;
 		float dist = sqrt(pow(nextPose.position.x-kobukiPose.position.x,2) + pow(nextPose.position.y-kobukiPose.position.y,2));
-		if(dist < 0.2){
-			ROS_INFO("dist < 0.2");
-		}
-
-
-		//rotPose = degreesToQuaternion(0.0,0.0,angle);
-
 		double kobukiAngleX,kobukiAngleY,kobukiAngleZ;
 		quaternionToDegreeAngle(kobukiPose,kobukiAngleX,kobukiAngleY,kobukiAngleZ);
 
 		double diffX = nextPose.position.x - kobukiPose.position.x;
 		double diffY = nextPose.position.y - kobukiPose.position.y;
 
-
-		float kp = 0.4;
+		float kp = 0.7;
 		float vel_x = dist * kp;
-		ROS_INFO("vel_x %f",vel_x);
+		//ROS_INFO("vel_x %f",vel_x);
 
 		/*ROS_INFO("Point %lu",pathLong-remainingSteps);
 		ROS_INFO("\tx: %f",nextPose.position.x);
@@ -89,26 +70,12 @@ namespace kobuki_controller {
 		ROS_INFO("\tangle: %f",kobukiAngleZ);*/
 		if(!turnReached){
 			double angle = coordinatesToAngle(kobukiPose.position.x, kobukiPose.position.y, nextPose.position.x, nextPose.position.y);
-			if (angle > 360.0){
-				ROS_INFO("Point %lu",pathLong-remainingSteps);
-				ROS_INFO("\tx: %f",nextPose.position.x);
-				ROS_INFO("\ty: %f",nextPose.position.y);
-				//ROS_INFO("\tangle: %f",angle);
-				ROS_INFO("Robot Position: ");
-				ROS_INFO("\tx: %f",kobukiPose.position.x);
-				ROS_INFO("\ty: %f",kobukiPose.position.y);
-				//ROS_INFO("\tangle: %f",kobukiAngleZ);
-				stop();
-				std::cerr << "angle > 360, --remainingSteps and return" << '\n';
-				remainingSteps--;
-				return;
-			}
-			if(kobukiAngleZ - angle < angleThZ){
-				turnLeft(0.2);
+			if(kobukiAngleZ - angle < 0){
+				turnLeft(0.3);
 			}else{ //if(kobukiAngleZ - angle > angleThZ)
-				turnRight(0.2);
+				turnRight(0.3);
 			}
-			if(fabs(kobukiAngleZ - angle) < angleThZ){
+			if(abs(kobukiAngleZ - angle) <= angleThZ){
 				turnReached=true;
 			}
 		}else{
@@ -236,15 +203,26 @@ namespace kobuki_controller {
 
 		if(distX > 0 && distY > 0){
 			angle = (double)atan(distY/distX);
-		}else if(distX < 0 && distY > 0){
-			angle = (M_PIl/2 + (double)atan(distY/fabs(distX)));
-		}else if(distX < 0 && distY < 0){
-			angle = (3*M_PIl/4 - (double)atan(fabs(distY/distX)));
-		}else if(distX > 0 && distY < 0){
-			angle = (2*M_PIl - (double)atan(fabs(distY)/distX));
+			angle = (angle/M_PIl)*180; //Conversion to degrees
+		}else
+		if(distX < 0 && distY > 0){
+			angle = (double)atan(distY/abs(distX));
+			angle = (angle/M_PIl)*180; //Conversion to degrees
+			angle = 180.0 - angle;
+			//angle = (90.0 + angle);
+		}else
+		if(distX < 0 && distY < 0){
+			angle = (double)atan(abs(distY/distX));
+			angle = (angle/M_PIl)*180; //Conversion to degrees
+			angle = -1.0*(180.0 - angle);
+			//angle = (270.0 - angle);
+		}else
+		if(distX > 0 && distY < 0){
+			angle = (double)atan(abs(distY)/distX);
+			angle = (angle/M_PIl)*(-180.0); //Conversion to degrees
+			// angle = (360.0 - angle);
 		}
-
-		angle = (angle/M_PIl)*180; //Conversion to degrees
+		//angle = (angle/M_PIl)*180; //Conversion to degrees
 
 		return angle;
 	}
@@ -259,7 +237,6 @@ int main(int argc, char **argv)
 	KobukiController kobukiController;
 	ros::Rate loop_rate(20);
 	while (ros::ok()){
-		//std::cerr << "main while" << '\n';
 		if(!kobukiController.goalReached){
 			kobukiController.step();
 		}

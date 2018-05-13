@@ -145,21 +145,31 @@ namespace csv_2_octomap {
 	void Csv2Octomap::inflateMap(float robot_radius){
 		ROS_INFO("inflate_process");
 		octomap::KeySet inflate_cells;
-		octomap::KeyRay keyRay_x,keyRay_y;
+		octomap::KeyRay keyRay_x_1,keyRay_x_2,keyRay_y_1,keyRay_y_2;
 
 		for (octomap::OcTree::iterator it = octree->begin(octree->getTreeDepth()),end = octree->end(); it != end; ++it){
 			//OcTreeNode* node = octree->search(it.getKey());
 			octomap::point3d point = octree->keyToCoord(it.getKey());
 			if(point.z() >= 0){
-				octomap::point3d point_infl_x_1(point.x() + robot_radius, point.y(), point.z());
-				octomap::point3d point_infl_x_2(point.x() - robot_radius, point.y(), point.z());
-				if (octree->computeRayKeys(point_infl_x_1, point_infl_x_2, keyRay_x))
-					inflate_cells.insert(keyRay_x.begin(), keyRay_x.end());
+				octomap::point3d point_infl_x_1(point.x() + robot_radius, point.y() - robot_radius, point.z());
+				octomap::point3d point_infl_x_2(point.x() + robot_radius, point.y() + robot_radius, point.z());
+				if (octree->computeRayKeys(point_infl_x_1, point_infl_x_2, keyRay_x_1))
+					inflate_cells.insert(keyRay_x_1.begin(), keyRay_x_1.end());
 
-				octomap::point3d point_infl_y_1(point.x(), point.y() + robot_radius, point.z());
-				octomap::point3d point_infl_y_2(point.x(), point.y() - robot_radius, point.z());
-				if (octree->computeRayKeys(point_infl_y_1, point_infl_y_2, keyRay_y))
-					inflate_cells.insert(keyRay_y.begin(), keyRay_y.end());
+				octomap::point3d point_infl_y_1(point.x() + robot_radius, point.y() + robot_radius, point.z());
+				octomap::point3d point_infl_y_2(point.x() - robot_radius, point.y() + robot_radius, point.z());
+				if (octree->computeRayKeys(point_infl_y_1, point_infl_y_2, keyRay_y_1))
+					inflate_cells.insert(keyRay_y_1.begin(), keyRay_y_1.end());
+
+				octomap::point3d point_infl_x_3(point.x()- robot_radius, point.y() + robot_radius, point.z());
+				octomap::point3d point_infl_x_4(point.x()- robot_radius, point.y() - robot_radius, point.z());
+				if (octree->computeRayKeys(point_infl_x_3, point_infl_x_4, keyRay_x_2))
+					inflate_cells.insert(keyRay_x_2.begin(), keyRay_x_2.end());
+
+				octomap::point3d point_infl_y_3(point.x() + robot_radius, point.y() - robot_radius, point.z());
+				octomap::point3d point_infl_y_4(point.x() - robot_radius, point.y() - robot_radius, point.z());
+				if (octree->computeRayKeys(point_infl_y_3, point_infl_y_4, keyRay_y_2))
+					inflate_cells.insert(keyRay_y_2.begin(), keyRay_y_2.end());
 			}
 		}
 		for (octomap::KeySet::iterator it = inflate_cells.begin(), end=inflate_cells.end(); it!= end; it++) {

@@ -4,6 +4,7 @@
 #include <ros/ros.h>
 #include <stdlib.h>
 #include "geometry_msgs/Pose.h"
+#include "geometry_msgs/PointStamped.h"
 #include "geometry_msgs/Twist.h"
 #include "geometry_msgs/Vector3.h"
 #include "nav_msgs/GetPlan.h"
@@ -20,7 +21,8 @@ namespace kobuki_controller {
   public:
       KobukiController();
       void poseUpdaterCallback(const PoseStamped::ConstPtr& actualPose);
-      void getPlanPath();
+			void goalPoseCallback(const PointStamped::ConstPtr& goal);
+      void getPlanPath(Point goal);
 			void step();
 			void moveForward(double speed);
 			void moveBack(double speed);
@@ -35,13 +37,13 @@ namespace kobuki_controller {
 
   private:
     ros::NodeHandle nh_;
-    ros::Subscriber poseUpdater_sub;
+    ros::Subscriber poseUpdater_sub, goal_sub;
     ros::ServiceClient pathPlan_srvClt;
 		ros::Publisher kobuki_move;
 
     Pose startPose_,goalPose_;
     Pose kobukiPose_;
-    bool poseReady;
+    bool pathReady;
 
 		GetPlan::Request reqPlan;
 		GetPlan::Response resPlan;
