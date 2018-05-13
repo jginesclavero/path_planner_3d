@@ -52,12 +52,9 @@ namespace kobuki_controller {
 
 		double minThresholdX = 0.1;
 		double minThresholdY = 0.1;
-		double angleThZ = 1;
+		double angleThZ = 2;
 
-		double angle=0;
-		do{
-			angle = coordinatesToAngle(kobukiPose.position.x, kobukiPose.position.y, nextPose.position.x, nextPose.position.y);
-		}while(angle>360);
+		double angle = coordinatesToAngle(kobukiPose.position.x, kobukiPose.position.y, nextPose.position.x, nextPose.position.y);
 		rotPose = degreesToQuaternion(0.0,0.0,angle);
 
 		double kobukiAngleX,kobukiAngleY,kobukiAngleZ;
@@ -78,18 +75,18 @@ namespace kobuki_controller {
 		ROS_INFO("\tangle: %f",kobukiAngleZ);
 
 		if(!turnReached){
-			if(kobukiAngleZ - angle < angleThZ){
-				turnLeft(0.1);
+			if(kobukiAngleZ - angle < 0){
+				turnLeft(0.3);
 			}else{ //if(kobukiAngleZ - angle > angleThZ)
-				turnRight(0.1);
+				turnRight(0.3);
 			}
-			if(abs(kobukiAngleZ - angle) < angleThZ){
+			if(abs(kobukiAngleZ - angle) <= angleThZ){
 				turnReached=true;
 			}
 		}else{
 			if(remainingSteps>0){
 				if(abs(diffX)>minThresholdX || abs(diffY)>minThresholdY){
-					moveForward(0.3);
+					moveForward(0.4);
 				}else {
 					remainingSteps--;
 					ROS_INFO(" ");
@@ -206,18 +203,27 @@ namespace kobuki_controller {
 
 		if(distX > 0 && distY > 0){
 			angle = (double)atan(distY/distX);
+			angle = (angle/M_PIl)*180; //Conversion to degrees
 		}else
 		if(distX < 0 && distY > 0){
-			angle = (90.0 + (double)atan(distY/abs(distX)));
+			angle = (double)atan(distY/abs(distX));
+			angle = (angle/M_PIl)*180; //Conversion to degrees
+			angle = 180.0 - angle;
+			//angle = (90.0 + angle);
 		}else
 		if(distX < 0 && distY < 0){
-			angle = (270.0 - (double)atan(abs(distY/distX)));
+			angle = (double)atan(abs(distY/distX));
+			angle = (angle/M_PIl)*180; //Conversion to degrees
+			angle = -1.0*(180.0 - angle);
+			//angle = (270.0 - angle);
 		}else
 		if(distX > 0 && distY < 0){
-			angle = (360.0 - (double)atan(abs(distY)/distX));
+			angle = (double)atan(abs(distY)/distX);
+			angle = (angle/M_PIl)*(-180.0); //Conversion to degrees
+			// angle = (360.0 - angle);
 		}
 
-		angle = (angle/M_PIl)*180; //Conversion to degrees
+		//angle = (angle/M_PIl)*180; //Conversion to degrees
 
 		return angle;
 	}
@@ -230,7 +236,7 @@ int main(int argc, char **argv)
 	ros::init(argc, argv, "kobuki_controller_node");
 	ros::NodeHandle n;
 	KobukiController kobukiController;
-	ros::Rate loop_rate(200);
+	ros::Rate loop_rate(20);
 	while (ros::ok()){
 		if(!kobukiController.goalReached){
 			kobukiController.step();
