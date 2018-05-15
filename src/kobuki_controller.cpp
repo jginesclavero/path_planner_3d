@@ -8,6 +8,7 @@ namespace kobuki_controller {
 		goal_sub = nh_.subscribe("/clicked_point", 1, &KobukiController::goalPoseCallback, this);
 		pathPlan_srvClt = nh_.serviceClient<GetPlan>("/make_plan");
 		kobuki_move = nh_.advertise<Twist>("/mobile_base/commands/velocity", 100);
+		if (nh_.getParam("ground_robot", ground_robot));
 	}
 
 	void KobukiController::poseUpdaterCallback(const PoseStamped::ConstPtr& actualPose){
@@ -26,6 +27,12 @@ namespace kobuki_controller {
 		goalPose_.position.x = goal.x;
 		goalPose_.position.y = goal.y;
 		goalPose_.position.z = 0.1;
+		if(goal.z > 0.1){
+			goalPose_.position.z = goal.z;
+		}else{
+			goalPose_.position.z = 0.1;
+
+		}
 		goalPose_.orientation.w = 1.0;
 		reqPlan.goal.pose = goalPose_;
 		if(pathPlan_srvClt.call(reqPlan, resPlan)){
@@ -38,7 +45,7 @@ namespace kobuki_controller {
 	}
 
 	void KobukiController::step(){
-		if(!pathReady){
+		if(!pathReady || !ground_robot){
 			return;
 		}
 		unsigned long int pathLong= resPlan.plan.poses.size();
@@ -58,21 +65,11 @@ namespace kobuki_controller {
 
 		float kp = 0.7;
 		float vel_x = dist * kp;
-		//ROS_INFO("vel_x %f",vel_x);
-
-		/*ROS_INFO("Point %lu",pathLong-remainingSteps);
-		ROS_INFO("\tx: %f",nextPose.position.x);
-		ROS_INFO("\ty: %f",nextPose.position.y);
-		ROS_INFO("\tangle: %f",angle);
-		ROS_INFO("Robot Position: ");
-		ROS_INFO("\tx: %f",kobukiPose.position.x);
-		ROS_INFO("\ty: %f",kobukiPose.position.y);
-		ROS_INFO("\tangle: %f",kobukiAngleZ);*/
 		if(!turnReached){
 			double angle = coordinatesToAngle(kobukiPose.position.x, kobukiPose.position.y, nextPose.position.x, nextPose.position.y);
 			if(kobukiAngleZ - angle < 0){
 				turnLeft(0.3);
-			}else{ //if(kobukiAngleZ - angle > angleThZ)
+			}else{
 				turnRight(0.3);
 			}
 			if(abs(kobukiAngleZ - angle) <= angleThZ){

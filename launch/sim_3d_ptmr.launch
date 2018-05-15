@@ -1,13 +1,15 @@
 <launch>
 
   <arg name="map" value="map1"/>
+  <arg name="ground_robot" value="true"/>
   <arg name="world_name" default="$(find path_planner_3d)/worlds/$(arg map).world"/>
+
 
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="use_sim_time" value="true"/>
     <arg name="debug" value="false"/>
     <arg name="world_name" value="$(arg world_name)"/>
-    <arg name="gui" value="false"/>
+    <arg name="gui" value="true"/>
   </include>
 
 
@@ -31,10 +33,6 @@
   </include>
 
 
-  <node pkg="laser_filters" type="scan_to_scan_filter_chain" name="laser_filter">
-    <rosparam command="load" file="$(find git_robots)/definition/sim/my_laser_config.yaml" />
-  </node>
-
   <arg name="robot_name" value="robot1"/>
   <node pkg="tf" type="static_transform_publisher" name="$(arg robot_name)map_broadcaster" args="$(arg posx) $(arg posy) 0 0 0 0.0 map odom 100" />
 
@@ -50,9 +48,12 @@
     <param name="step_size" value="0.2" />
     <param name="end_dist_threshold" value="0.2" />
     <param name="rrtstar_neighbor_factor" value="3.0" />
-    <param name="ground_robot" value="false" />
+    <param name="ground_robot" value="$(arg ground_robot)" />
   </node>
 
+  <node pkg="path_planner_3d" type="kobuki_controller_node" name="kobuki_controller_node" output="screen">
+    <param name="ground_robot" value="$(arg ground_robot)" />
+  </node>
 
 
 </launch>

@@ -43,7 +43,7 @@ namespace kobuki_controller {
 
     Pose startPose_,goalPose_;
     Pose kobukiPose_;
-    bool pathReady;
+    bool pathReady,ground_robot;
 
 		GetPlan::Request reqPlan;
 		GetPlan::Response resPlan;

@@ -74,7 +74,7 @@ namespace path_planner {
                 if (!isSegmentInObstacle(newConfigPos, qNearest->position)) {
                     Node *qNew = new Node;
                     qNew->position = newConfigPos;
-										qNew->orientation = 0.0; //apaño momentaneo
+										qNew->orientation = 0.0;
 
                     vector<Node *> Qnear;
                     rrtstar->near(qNew->position, rrtstar->step_size*rrtstar->rrtstar_neighbor_factor, Qnear);
