@@ -1,6 +1,6 @@
 <launch>
 
-  <arg name="map" value="map1"/>
+  <arg name="map" value="map4"/>
   <arg name="ground_robot" value="true"/>
   <arg name="world_name" default="$(find path_planner_3d)/worlds/$(arg map).world"/>
 
@@ -21,10 +21,18 @@
 
   -->
 
+  <!-- map4 -->
+
+  <arg name="posx" value="4.5"/>
+  <arg name="posy" value="14.5"/>
+  <arg name="posYaw" value="0.0"/>
+
+    <!--
+
   <arg name="posx" value="2.5"/>
   <arg name="posy" value="2.5"/>
   <arg name="posYaw" value="0.0"/>
-
+-->
 
   <include file="$(find path_planner_3d)/launch/includes/robot_velodyne.launch.xml">
     <arg name="posx" value="$(arg posx)"/>
@@ -44,9 +52,9 @@
   <node pkg="path_planner_3d" type="fakeLocalization_node" name="fakeLocalization_node" output="screen"/>
 
   <node pkg="path_planner_3d" type="path_planner_3d_node" name="path_planner_3d_node" output="screen">
-    <param name="max_iter" value="5000" />
-    <param name="step_size" value="0.2" />
-    <param name="end_dist_threshold" value="0.2" />
+    <param name="max_iter" value="15000" />
+    <param name="step_size" value="0.5" />
+    <param name="end_dist_threshold" value="0.5" />
     <param name="rrtstar_neighbor_factor" value="3.0" />
     <param name="ground_robot" value="$(arg ground_robot)" />
   </node>
