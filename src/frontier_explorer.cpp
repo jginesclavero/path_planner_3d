@@ -54,7 +54,6 @@ FrontierExplorer::frontierDetector(){
 
 void
 FrontierExplorer::frontierClass(){
-	ROS_INFO("frontierClass");
 	for (std::list<geometry_msgs::Point>::iterator it=frontierPList.begin(); it != frontierPList.end(); ++it){
 		if(isEndFrontier(*it)){
 			cost_map.setCost(it->x,it->y,150);
