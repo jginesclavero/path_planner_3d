@@ -1,6 +1,6 @@
 <launch>
 
-  <arg name="map" value="map4"/>
+  <arg name="map" value="map1"/>
   <arg name="ground_robot" value="true"/>
   <arg name="world_name" default="$(find path_planner_3d)/worlds/$(arg map).world"/>
 
@@ -9,7 +9,7 @@
     <arg name="use_sim_time" value="true"/>
     <arg name="debug" value="false"/>
     <arg name="world_name" value="$(arg world_name)"/>
-    <arg name="gui" value="true"/>
+    <arg name="gui" value="false"/>
   </include>
 
 
@@ -22,17 +22,17 @@
   -->
 
   <!-- map4 -->
-
+<!--
   <arg name="posx" value="4.5"/>
   <arg name="posy" value="14.5"/>
   <arg name="posYaw" value="0.0"/>
 
-    <!--
+-->
 
   <arg name="posx" value="2.5"/>
   <arg name="posy" value="2.5"/>
   <arg name="posYaw" value="0.0"/>
--->
+
 
   <include file="$(find path_planner_3d)/launch/includes/robot_velodyne.launch.xml">
     <arg name="posx" value="$(arg posx)"/>
@@ -42,9 +42,9 @@
 
 
   <arg name="robot_name" value="robot1"/>
-  <node pkg="tf" type="static_transform_publisher" name="$(arg robot_name)map_broadcaster" args="$(arg posx) $(arg posy) 0 0 0 0.0 map odom 100" />
+  <!--<node pkg="tf" type="static_transform_publisher" name="$(arg robot_name)map_broadcaster" args="$(arg posx) $(arg posy) 0 0 0 0.0 map odom 100" />-->
 
-  <node pkg="path_planner_3d" type="csv2Octomap_node" name="csv2Octomap_node" output="screen">
+<!--  <node pkg="path_planner_3d" type="csv2Octomap_node" name="csv2Octomap_node" output="screen">
     <param name="map_file" value="$(find path_planner_3d)/maps/csv/$(arg map).csv" />
     <param name="robot_radius" value="0.2" />
   </node>
@@ -53,15 +53,15 @@
 
   <node pkg="path_planner_3d" type="path_planner_3d_node" name="path_planner_3d_node" output="screen">
     <param name="max_iter" value="15000" />
-    <param name="step_size" value="0.5" />
-    <param name="end_dist_threshold" value="0.5" />
+    <param name="step_size" value="0.3" />
+    <param name="end_dist_threshold" value="0.3" />
     <param name="rrtstar_neighbor_factor" value="3.0" />
     <param name="ground_robot" value="$(arg ground_robot)" />
   </node>
 
   <node pkg="path_planner_3d" type="kobuki_controller_node" name="kobuki_controller_node" output="screen">
     <param name="ground_robot" value="$(arg ground_robot)" />
-  </node>
+  </node>-->
 
 
 </launch>

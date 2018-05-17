@@ -38,11 +38,6 @@ namespace path_planner {
 		if (nh_.getParam("ground_robot", rrtstar->ground_robot));
 
 
-    /*rrtstar->max_iter = 5000;
-		rrtstar->step_size = 0.2;
-		rrtstar->end_dist_threshold=0.2;
-		rrtstar->rrtstar_neighbor_factor = 3.0;
-		rrtstar->ground_robot = true;*/
     rrtstar->startPos = start.position;
     rrtstar->endPos = goal.position;
 		rrtstar->world_length = world_length_;
