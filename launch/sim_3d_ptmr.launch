@@ -42,9 +42,9 @@
 
 
   <arg name="robot_name" value="robot1"/>
-  <!--<node pkg="tf" type="static_transform_publisher" name="$(arg robot_name)map_broadcaster" args="$(arg posx) $(arg posy) 0 0 0 0.0 map odom 100" />-->
+  <node pkg="tf" type="static_transform_publisher" name="$(arg robot_name)map_broadcaster" args="$(arg posx) $(arg posy) 0 0 0 0.0 map odom 100" />
 
-<!--  <node pkg="path_planner_3d" type="csv2Octomap_node" name="csv2Octomap_node" output="screen">
+  <node pkg="path_planner_3d" type="csv2Octomap_node" name="csv2Octomap_node" output="screen">
     <param name="map_file" value="$(find path_planner_3d)/maps/csv/$(arg map).csv" />
     <param name="robot_radius" value="0.2" />
   </node>
@@ -61,7 +61,7 @@
 
   <node pkg="path_planner_3d" type="kobuki_controller_node" name="kobuki_controller_node" output="screen">
     <param name="ground_robot" value="$(arg ground_robot)" />
-  </node>-->
+  </node>
 
 
 </launch>

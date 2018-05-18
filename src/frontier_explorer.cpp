@@ -3,7 +3,11 @@
 FrontierExplorer::FrontierExplorer():
 private_nh_("~"),cost_map_publisher_(&nh_,&cost_map,"/map","/costmap_auto",true){
 	map_sub	= nh_.subscribe("/map", 5, &FrontierExplorer::mapCallback,this);
-	vis_pub_ = nh_.advertise<visualization_msgs::MarkerArray>("markers", 10);
+	vis_pub_ = nh_.advertise<visualization_msgs::MarkerArray>("markers", 10,true);
+	path_pub = nh_.advertise<nav_msgs::Path>("frontier_path",1,true);
+	//if (nh_.getParam("debug_mode", debug_mode));
+	debug_mode = true;
+	nodes_vis_.markers.clear();
 }
 
 void
@@ -105,7 +109,7 @@ FrontierExplorer::frontierVis(){
 			count++;
 			p.x = it->x * resolution + originMap.x;
 			p.y = it->y * resolution + originMap.y;
-			addLocationVis(count,p,0.0,0.0,itMap->first*0.25 + 0.25,1.0);
+			addLocationVis(count,p,0.0,0.0,itMap->first*0.25 + 0.25,0.5);
 		}
 	}
 }
@@ -133,7 +137,34 @@ FrontierExplorer::addLocationVis(int id, geometry_msgs::Point point,float r, flo
 }
 
 void
+FrontierExplorer::getRefFrontierPoints(){
+	geometry_msgs::PoseStamped pPath;
+	geometry_msgs::Point p;
+	int num_points = 0, i=0;
+	path.poses.resize(frontierMap.size());
+	for (std::map<int,std::list<geometry_msgs::Point>>::iterator itMap=frontierMap.begin(); itMap!=frontierMap.end(); ++itMap){
+		for (std::list<geometry_msgs::Point>::iterator it=itMap->second.begin(); it != itMap->second.end(); ++it){
+			p.x = p.x + (it->x * resolution + originMap.x);
+			p.y = p.y + (it->y * resolution + originMap.y);
+			num_points++;
+		}
+
+		p.x = p.x / num_points;
+		p.y = p.y / num_points;
+		pPath.pose.position = p;
+		path.poses[i] = pPath;
+		addLocationVis(i,p,0.0,1.0,0.0,1.0);
+		num_points = 0;
+		p.x = 0;
+		p.y = 0;
+		i++;
+	}
+}
+
+void
 FrontierExplorer::publishAll(){
+	path.header.frame_id = "/map";
+	path_pub.publish(path);
 	vis_pub_.publish(nodes_vis_);
 	nodes_vis_.markers.clear();
 	cost_map_publisher_.publishCostmap();
@@ -143,7 +174,12 @@ void
 FrontierExplorer::step(){
 	frontierDetector();
 	frontierClass();
-	frontierVis();
+	getRefFrontierPoints();
+
+	if(debug_mode){
+		frontierVis();
+	}
+
 	publishAll();
 	frontierPList.clear();
 }

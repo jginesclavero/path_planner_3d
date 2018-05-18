@@ -49,4 +49,8 @@
      <arg name="custom_param_file" value="$(arg custom_param_file)"/>
   </include>
 
+
+  <node pkg="path_planner_3d" type="frontier_explorer_node" name="frontier_explorer_node" output="screen">
+    <param name="debug_mode" value="false" />
+  </node>
 </launch>
