@@ -3,6 +3,7 @@
 FrontierExplorer::FrontierExplorer():
 private_nh_("~"),cost_map_publisher_(&nh_,&cost_map,"/map","/costmap_auto",true){
 	map_sub	= nh_.subscribe("/map", 5, &FrontierExplorer::mapCallback,this);
+	vis_pub_ = nh_.advertise<visualization_msgs::MarkerArray>("markers", 10);
 	//longTermMap_pub	 	= nh_.advertise<nav_msgs::OccupancyGrid>("/longTerm_map", 5);
 	//effectiveMap_pub	= nh_.advertise<nav_msgs::OccupancyGrid>("/map", 5); //Effective_map
 
@@ -17,12 +18,16 @@ private_nh_("~"),cost_map_publisher_(&nh_,&cost_map,"/map","/costmap_auto",true)
 
 void
 FrontierExplorer::mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& map){
+	resolution = map->info.resolution;
+	originMap.x =  map->info.origin.position.x;
+	originMap.y =  map->info.origin.position.y;
 	grid2CostMap(*map);
 }
 
 void
 FrontierExplorer::grid2CostMap(nav_msgs::OccupancyGrid map){
 	cost_map.resizeMap(map.info.width,map.info.height, map.info.resolution, map.info.origin.position.x, map.info.origin.position.y);
+	ROS_INFO("origin x: %f y:%f",map.info.origin.position.x, map.info.origin.position.y);
 	cost_map.setDefaultValue(254);
 	int i = 0;
 	float normalizer = 2.54;
@@ -54,12 +59,35 @@ FrontierExplorer::frontierDetector(){
 
 void
 FrontierExplorer::frontierClass(){
+	//ROS_INFO("----------------------------------------");
+	geometry_msgs::Point pLast,pEnd;
+	int idMap = 0;
+	std::list<geometry_msgs::Point> points;
 	for (std::list<geometry_msgs::Point>::iterator it=frontierPList.begin(); it != frontierPList.end(); ++it){
 		if(isEndFrontier(*it)){
-			cost_map.setCost(it->x,it->y,150);
+			if(pEnd.x == 0.0 && pEnd.y == 0.0){
+				//cost_map.setCost(it->x,it->y,idMap*50);
+				pLast = *it;
+				pEnd = *it;
+				points.push_back(pEnd);
+			}else{
+				//cost_map.setCost(it->x,it->y,idMap*50);
+				points.push_back(*it);
+				frontierMap[idMap] = points;
+				idMap++;
+				pLast.x=0.0;
+				pLast.y=0.0;
+				pEnd = pLast;
+				points.clear();
+			}
+		}else if(isNeighbor(*it,pLast) && pEnd.x != 0.0 && pEnd.y != 0.0){
+			pLast = *it;
+			points.push_back(pLast);
+			//cost_map.setCost(it->x,it->y,idMap*50);
 		}
-
+		//ROS_INFO("P -- x: %f  y: %f",it->x,it->y);
 	}
+	//ROS_INFO("----------------------------------------");
 }
 
 
@@ -76,51 +104,65 @@ FrontierExplorer::isEndFrontier(geometry_msgs::Point p){
 		cost_map.getCost(p.x-1,p.y) == 254 || cost_map.getCost(p.x-1,p.y-1) == 254 ||
 		cost_map.getCost(p.x,p.y-1) == 254 || cost_map.getCost(p.x+1,p.y-1) == 254);
 }
-
-/*
+bool
+FrontierExplorer::isNeighbor(geometry_msgs::Point p1,geometry_msgs::Point p2){
+	geometry_msgs::Point p;
+	p.x = p2.x - p1.x;
+	p.y = p2.y - p1.y;
+	return (sqrt(powf(p.x, 2) + powf(p.y, 2)) < 1.5);
+}
 
 void
-FrontierExplorer::updateLongTermMap(nav_msgs::OccupancyGrid s_map){
-	for(int i = 0;i<s_map.data.size();i++){
-		if(s_map.data[i] > 95){
-			//longTerm_map.data[i] = s_map.data[i];
-			if(longTerm_map.data[i] <= 100 - longterm_cost_inc){
-				longTerm_map.data[i]= longTerm_map.data[i] + longterm_cost_inc;
-			}else{
-				longTerm_map.data[i] = 100;
-			}
-		}else if(s_map.data[i] <= 25 && s_map.data[i] >= 0 && static_map.data[i] < 95){
-			if(longTerm_map.data[i] >= longterm_cost_dec){
-				longTerm_map.data[i] = longTerm_map.data[i] - longterm_cost_dec;
-			}else{
-				longTerm_map.data[i] = 0;
-			}
+FrontierExplorer::frontierVis(){
+	geometry_msgs::Point p;
+	int count = 0;
+	for (std::map<int,std::list<geometry_msgs::Point>>::iterator itMap=frontierMap.begin(); itMap!=frontierMap.end(); ++itMap){
+		for (std::list<geometry_msgs::Point>::iterator it=itMap->second.begin(); it != itMap->second.end(); ++it){
+			count++;
+			//hay que hacer la trasnformada a MAP
+			p.x = it->x * resolution + originMap.x;
+			p.y = it->y * resolution + originMap.y;
+			addLocationVis(count,p,0.0,0.0,itMap->first*0.25 + 0.25,1.0);
 		}
 	}
-}*/
-/*
-void
-FrontierExplorer::buildEffectiveMap(nav_msgs::OccupancyGrid s_map,nav_msgs::OccupancyGrid l_map){
-	for(int i = 0;i<s_map.data.size();i++){
-		effective_map.data[i] = std::max(static_map.data[i],l_map.data[i]);
-	}
-}*/
-void
-FrontierExplorer::publishAll(){
-	cost_map_publisher_.publishCostmap();
 }
 
 
 void
-FrontierExplorer::step(){
-	/*if(map_ready){
-		buildEffectiveMap(shortTerm_map,longTerm_map);
-		updateLongTermMap(shortTerm_map);
+FrontierExplorer::addLocationVis(int id, geometry_msgs::Point point,float r, float g, float b,float alpha){
+	visualization_msgs::Marker marker;
+	geometry_msgs::	Pose p;
+	marker.header.frame_id = "/map";
+	marker.header.stamp = ros::Time();
+	marker.ns = "locations";
+	marker.id = id;
+	marker.type = visualization_msgs::Marker::SPHERE;
+	marker.action = visualization_msgs::Marker::ADD;
 
-	}*/
+	marker.pose.position = point;
+	marker.scale.x = 0.05;
+	marker.scale.y = 0.05;
+	marker.scale.z = 0.05;
+	marker.color.a = alpha; // Don't forget to set the alpha!
+	marker.color.r = r;
+	marker.color.g = g;
+	marker.color.b = b;
+	nodes_vis_.markers.push_back(marker);
+}
+
+void
+FrontierExplorer::publishAll(){
+	vis_pub_.publish(nodes_vis_);
+	cost_map_publisher_.publishCostmap();
+}
+
+void
+FrontierExplorer::step(){
 	frontierDetector();
 	frontierClass();
+	frontierVis();
 	publishAll();
+	frontierPList.clear();
 }
 
 
@@ -128,7 +170,7 @@ int main(int argc, char **argv)
 {
 	ros::init(argc, argv, "frontier_explorer");		//Inicializa el nodo
 	FrontierExplorer frontier_explorer;
-	ros::Rate loop_rate(20);
+	ros::Rate loop_rate(5);
   	while (ros::ok()){
   		frontier_explorer.step();
   		ros::spinOnce();

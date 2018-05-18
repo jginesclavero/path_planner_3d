@@ -14,6 +14,8 @@
 #include <costmap_2d/costmap_2d.h>
 #include <costmap_2d/costmap_2d_ros.h>
 #include <costmap_2d/costmap_2d_publisher.h>
+#include <visualization_msgs/MarkerArray.h>
+
 
 
 
@@ -29,16 +31,24 @@ private:
 	ros::NodeHandle nh_;
 	ros::NodeHandle private_nh_;
 	ros::Subscriber map_sub;
-	ros::Publisher 	frontierMap_pub;
+	ros::Publisher 	frontierMap_pub,vis_pub_;
 	costmap_2d::Costmap2D cost_map;
 	costmap_2d::Costmap2DPublisher cost_map_publisher_;
+	std::list<geometry_msgs::Point> frontierPList;
+	std::map<int,std::list<geometry_msgs::Point>> frontierMap;
+	visualization_msgs::MarkerArray nodes_vis_;
+	float resolution;
+	geometry_msgs::Point originMap;
 
 	void grid2CostMap(nav_msgs::OccupancyGrid map);
 	void frontierDetector();
 	void frontierClass();
 	bool isFrontier(int x, int y);
 	bool isEndFrontier(geometry_msgs::Point p);
-	std::list<geometry_msgs::Point> frontierPList;
+	bool isNeighbor(geometry_msgs::Point p1,geometry_msgs::Point p2);
+	void frontierVis();
+	void addLocationVis(int id, geometry_msgs::Point point,float r, float g, float b,float alpha);
+
 
 	//nav_msgs::OccupancyGrid static_map,longTerm_map,shortTerm_map,effective_map;
 
