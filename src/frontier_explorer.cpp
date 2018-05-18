@@ -153,6 +153,7 @@ FrontierExplorer::addLocationVis(int id, geometry_msgs::Point point,float r, flo
 void
 FrontierExplorer::publishAll(){
 	vis_pub_.publish(nodes_vis_);
+	nodes_vis_.markers.clear();
 	cost_map_publisher_.publishCostmap();
 }
 
