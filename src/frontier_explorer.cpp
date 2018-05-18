@@ -4,17 +4,7 @@ FrontierExplorer::FrontierExplorer():
 private_nh_("~"),cost_map_publisher_(&nh_,&cost_map,"/map","/costmap_auto",true){
 	map_sub	= nh_.subscribe("/map", 5, &FrontierExplorer::mapCallback,this);
 	vis_pub_ = nh_.advertise<visualization_msgs::MarkerArray>("markers", 10);
-	//longTermMap_pub	 	= nh_.advertise<nav_msgs::OccupancyGrid>("/longTerm_map", 5);
-	//effectiveMap_pub	= nh_.advertise<nav_msgs::OccupancyGrid>("/map", 5); //Effective_map
-
-	/*effective_map.info.resolution = longTerm_map.info.resolution;
-	effective_map.info.width = longTerm_map.info.width;
-	effective_map.info.height = longTerm_map.info.height;
-	effective_map.info.origin = longTerm_map.info.origin;
-	effective_map.data.resize(longTerm_map.info.width * longTerm_map.info.height);*/
 }
-
-
 
 void
 FrontierExplorer::mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& map){
@@ -59,19 +49,16 @@ FrontierExplorer::frontierDetector(){
 
 void
 FrontierExplorer::frontierClass(){
-	//ROS_INFO("----------------------------------------");
 	geometry_msgs::Point pLast,pEnd;
 	int idMap = 0;
 	std::list<geometry_msgs::Point> points;
 	for (std::list<geometry_msgs::Point>::iterator it=frontierPList.begin(); it != frontierPList.end(); ++it){
 		if(isEndFrontier(*it)){
 			if(pEnd.x == 0.0 && pEnd.y == 0.0){
-				//cost_map.setCost(it->x,it->y,idMap*50);
 				pLast = *it;
 				pEnd = *it;
 				points.push_back(pEnd);
 			}else{
-				//cost_map.setCost(it->x,it->y,idMap*50);
 				points.push_back(*it);
 				frontierMap[idMap] = points;
 				idMap++;
@@ -83,13 +70,9 @@ FrontierExplorer::frontierClass(){
 		}else if(isNeighbor(*it,pLast) && pEnd.x != 0.0 && pEnd.y != 0.0){
 			pLast = *it;
 			points.push_back(pLast);
-			//cost_map.setCost(it->x,it->y,idMap*50);
 		}
-		//ROS_INFO("P -- x: %f  y: %f",it->x,it->y);
 	}
-	//ROS_INFO("----------------------------------------");
 }
-
 
 bool
 FrontierExplorer::isFrontier(int x, int y){
@@ -104,6 +87,7 @@ FrontierExplorer::isEndFrontier(geometry_msgs::Point p){
 		cost_map.getCost(p.x-1,p.y) == 254 || cost_map.getCost(p.x-1,p.y-1) == 254 ||
 		cost_map.getCost(p.x,p.y-1) == 254 || cost_map.getCost(p.x+1,p.y-1) == 254);
 }
+
 bool
 FrontierExplorer::isNeighbor(geometry_msgs::Point p1,geometry_msgs::Point p2){
 	geometry_msgs::Point p;
@@ -119,14 +103,12 @@ FrontierExplorer::frontierVis(){
 	for (std::map<int,std::list<geometry_msgs::Point>>::iterator itMap=frontierMap.begin(); itMap!=frontierMap.end(); ++itMap){
 		for (std::list<geometry_msgs::Point>::iterator it=itMap->second.begin(); it != itMap->second.end(); ++it){
 			count++;
-			//hay que hacer la trasnformada a MAP
 			p.x = it->x * resolution + originMap.x;
 			p.y = it->y * resolution + originMap.y;
 			addLocationVis(count,p,0.0,0.0,itMap->first*0.25 + 0.25,1.0);
 		}
 	}
 }
-
 
 void
 FrontierExplorer::addLocationVis(int id, geometry_msgs::Point point,float r, float g, float b,float alpha){
