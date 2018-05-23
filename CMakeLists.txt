@@ -73,12 +73,13 @@ add_executable(kobuki_controller_node src/kobuki_controller.cpp)
 add_dependencies(kobuki_controller_node ${catkin_EXPORTED_TARGETS})
 target_link_libraries(kobuki_controller_node ${catkin_LIBRARIES})
 
-
 add_executable(frontier_explorer_node src/frontier_explorer.cpp)
 add_dependencies(frontier_explorer_node ${catkin_EXPORTED_TARGETS})
 target_link_libraries(frontier_explorer_node ${catkin_LIBRARIES})
 
-
+add_executable(frontier_path_executer_node src/frontier_path_executer.cpp)
+add_dependencies(frontier_path_executer_node ${catkin_EXPORTED_TARGETS})
+target_link_libraries(frontier_path_executer_node ${catkin_LIBRARIES})
 
 #############
 ## Install ##
