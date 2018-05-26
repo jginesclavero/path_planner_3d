@@ -38,14 +38,6 @@ bool FrontierPathExecuter::findInPath(){
   }
 }
 
-float FrontierPathExecuter::distBaseTarget(geometry_msgs::Pose basePose, geometry_msgs::Pose targetPose){
-  float distance=0.0;
-
-  distance = sqrt(pow(targetPose.position.x-basePose.position.x,2) + pow(targetPose.position.y-basePose.position.y,2));
-
-  return distance;
-}
-
 double FrontierPathExecuter::coordinatesToAngle(double initX ,double initY, double goalX, double goalY){
   double angle=0.0;
   initX = roundf(initX * 10000)/10000; //Precision milimetros
@@ -55,15 +47,6 @@ double FrontierPathExecuter::coordinatesToAngle(double initX ,double initY, doub
   double distX = goalX - initX;
   double distY = goalY - initY;
 
-  ROS_INFO("CALCULATE ANGLE");
-  ROS_INFO("\tInitX: %f",initX);
-  ROS_INFO("\tInitY: %f",initY);
-  ROS_INFO("\tGoalX: %f",goalX);
-  ROS_INFO("\tGoalY: %f",goalY);
-  ROS_INFO("\tDistX: %f",distX);
-  ROS_INFO("\tDistY: %f",distY);
-
-
   if(distX > 0 && distY > 0){
     angle = (double)atan(distY/distX);
     angle = (angle/M_PIl)*180; //Conversion to degrees
@@ -72,18 +55,15 @@ double FrontierPathExecuter::coordinatesToAngle(double initX ,double initY, doub
     angle = (double)atan(distY/abs(distX));
     angle = (angle/M_PIl)*180; //Conversion to degrees
     angle = 180.0 - angle;
-    //angle = (90.0 + angle);
   }else
   if(distX < 0 && distY < 0){
     angle = (double)atan(abs(distY/distX));
     angle = (angle/M_PIl)*180; //Conversion to degrees
     angle = -1.0*(180.0 - angle);
-    //angle = (270.0 - angle);
   }else
   if(distX > 0 && distY < 0){
     angle = (double)atan(abs(distY)/distX);
     angle = (angle/M_PIl)*(-180.0); //Conversion to degrees
-    // angle = (360.0 - angle);
   }else
   if(distY==0){
     angle=180;
@@ -91,8 +71,6 @@ double FrontierPathExecuter::coordinatesToAngle(double initX ,double initY, doub
   if(distX==0){
     angle=90;
   }
-  //angle = (angle/M_PIl)*180; //Conversion to degrees
-  ROS_INFO("\tANGLE: %lf",angle);
 
   return angle;
 }
@@ -112,10 +90,6 @@ FrontierPathExecuter::step(){
   basePose.orientation.w = map2bf.getRotation().w();
   tf::Quaternion quat(basePose.orientation.x,basePose.orientation.y,basePose.orientation.z,basePose.orientation.w);
 
-  if(distBaseTarget(basePose, targetPose)<=distThreshold){
-    moving=false;
-  }
-
   if(!findInPath()){
     moving=false;
   }
@@ -129,9 +103,6 @@ FrontierPathExecuter::step(){
     targetPose = path_.poses[destPose].pose;
     angle = coordinatesToAngle(basePose.position.x,basePose.position.y,targetPose.position.x, targetPose.position.y);
     q.setEuler(0,0,angle);
-    // targetPose.position.x = -0.5;
-    // targetPose.position.y =  0.0;
-    // targetPose.position.z =  0.0;
     targetPose.orientation.x = q.x();
     targetPose.orientation.y = q.y();
     targetPose.orientation.z = q.z();
@@ -166,28 +137,7 @@ FrontierPathExecuter::step(){
 
     move_pub.publish(poseMsg);
 
-  }else{
-    if(lastStep){
-      ROS_INFO("RECOGNITION FINISHED");
-    }
   }
-
-
-
-  // std::cout<<"Position" <<std::endl;
-  // std::cout<<"\tPos X: "<<basePose.position.x<<std::endl;
-  // std::cout<<"\tPos Y: "<<basePose.position.y<<std::endl;
-  // std::cout<<"\tPos Z: "<<basePose.position.z<<std::endl<<std::endl;
-  // std::cout<<"Rotation" <<std::endl;
-  // std::cout<<"\tPos X: "<<basePose.orientation.x<<std::endl;
-  // std::cout<<"\tPos Y: "<<basePose.orientation.y<<std::endl;
-  // std::cout<<"\tPos Z: "<<basePose.orientation.z<<std::endl;
-  // std::cout<<"\tPos W: "<<basePose.orientation.w<<std::endl;
-  // if(pointReached && !moving){
-  //   nextPose = path_.poses[0];
-  // }
-  // move_pub.publish(nextPose);
-
 
 }
 
