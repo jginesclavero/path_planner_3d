@@ -29,7 +29,9 @@ public:
 
 	void pathCallback(const nav_msgs::Path& path);
 	size_t distCalculation();
-
+	float distBaseTarget(geometry_msgs::Pose basePose, geometry_msgs::Pose targetPose);
+	double coordinatesToAngle(double initX ,double initY, double goalX, double goalY);
+	bool findInPath();
 	void step();
 
 
@@ -43,11 +45,18 @@ private:
 	nav_msgs::Path path_;
 	bool pointReached;
 	bool moving;
+	bool lastStep;
 
 	tf::TransformListener tfListener_;
 	tf::StampedTransform map2bf;
 
 	geometry_msgs::Pose basePose;
+	geometry_msgs::Pose targetPose;
+	geometry_msgs::PoseStamped poseMsg;
+
+	float distThreshold;
+	size_t destPose;
+
 };
 
 #endif
