@@ -110,7 +110,7 @@ FrontierPathExecuter::step(){
 
     poseMsg.pose = targetPose;
     moving=true;
-
+    /*
     std::cout<<"Robot Pose" <<std::endl;
     std::cout<<"Position" <<std::endl;
     std::cout<<"\tPos X: "<<roundf(basePose.position.x*100)/100 <<std::endl;
@@ -133,8 +133,7 @@ FrontierPathExecuter::step(){
     std::cout<<"\tOri Y: "<<targetPose.orientation.y<<std::endl;
     std::cout<<"\tOri Z: "<<targetPose.orientation.z<<std::endl;
     std::cout<<"\tOri W: "<<targetPose.orientation.w<<std::endl;
-    std::cout<<"Dest Angle: "<<q.getAngle()<<std::endl<<std::endl;
-
+    std::cout<<"Dest Angle: "<<q.getAngle()<<std::endl<<std::endl;*/
     move_pub.publish(poseMsg);
 
   }

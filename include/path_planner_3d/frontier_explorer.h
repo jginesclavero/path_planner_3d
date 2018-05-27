@@ -38,7 +38,7 @@ private:
 	ros::Subscriber map_sub,global_map_sub,global_map_updates_sub;
 	ros::Publisher 	frontierMap_pub,vis_pub_,path_pub;
 	costmap_2d::Costmap2D cost_map_,global_costmap;
-	costmap_2d::Costmap2DPublisher cost_map_publisher_;
+	costmap_2d::Costmap2DPublisher cost_map_publisher_,debugcost_map_publisher_;
 	std::list<geometry_msgs::Point> frontierPList;
 	std::map<int,std::list<geometry_msgs::Point>> frontierMap;
 	visualization_msgs::MarkerArray nodes_vis_;

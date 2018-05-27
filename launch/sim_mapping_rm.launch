@@ -1,6 +1,6 @@
 <launch>
 
-  <arg name="map" value="map1"/>
+  <arg name="map" value="map2"/>
   <arg name="world_name" default="$(find path_planner_3d)/worlds/$(arg map).world"/>
 
 
@@ -11,14 +11,6 @@
     <arg name="gui" value="false"/>
   </include>
 
-  <!-- map3 -->
-  <!--
-  <arg name="posx" value="4.5"/>
-  <arg name="posy" value="10.5"/>
-  <arg name="posYaw" value="0.0"/>
-
-  -->
-
   <!-- map4 -->
 <!--
   <arg name="posx" value="4.5"/>
@@ -26,11 +18,15 @@
   <arg name="posYaw" value="0.0"/>
 
 -->
-  <arg name="posx" value="2.5"/>
-  <arg name="posy" value="2.5"/>
+<!-- map3 -->
+<!--
+  <arg name="posx" value="4.5"/>
+  <arg name="posy" value="10.5"/>
   <arg name="posYaw" value="0.0"/>
-
-
+-->
+<arg name="posx" value="2.5"/>
+<arg name="posy" value="2.5"/>
+<arg name="posYaw" value="0.0"/>
   <include file="$(find path_planner_3d)/launch/includes/robot_velodyne.launch.xml">
     <arg name="posx" value="$(arg posx)"/>
     <arg name="posy" value="$(arg posy)"/>
