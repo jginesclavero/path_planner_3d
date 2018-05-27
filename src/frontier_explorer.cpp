@@ -186,7 +186,7 @@ FrontierExplorer::getRefFrontierPoints(){
 	p.x = 0.0,p.y=0.0;
 
 	for (std::map<int,std::list<geometry_msgs::Point>>::iterator itMap=frontierMap.begin(); itMap!=frontierMap.end(); ++itMap){
-		for (std::list<geometry_msgs::Point>::iterator it=itMap->second.begin(); it != itMap->second.end(); ++it){x
+		for (std::list<geometry_msgs::Point>::iterator it=itMap->second.begin(); it != itMap->second.end(); ++it){
 			p.x = p.x + (it->x * resolution + originMap.x);
 			p.y = p.y + (it->y * resolution + originMap.y);
 			num_points++;
